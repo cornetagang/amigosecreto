@@ -247,6 +247,81 @@
       pointer-events: none;
       z-index: 0;
     }
+
+    #audio-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      z-index: 10000;
+    }
+
+/* Botón de play/pause */
+    #play-pause-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+      z-index: 2;
+    }
+
+    #play-pause-btn:hover {
+      background-color: #d1e3ff;
+    }
+
+    #play-pause-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: #2563eb;
+    }
+
+/* Cuadro que contiene la barra de volumen */
+    #volume-container {
+      position: absolute;
+      bottom: 52px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition-delay: 0.2s; /* pequeño retardo antes de ocultarse */
+    }
+
+/* Mostrar volumen al pasar el mouse por el botón o la caja */
+    #play-pause-btn:hover + #volume-container,
+    #volume-container:hover {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+/* Slider de volumen vertical */
+    #volume-slider {
+      writing-mode: bt-lr;
+      -webkit-appearance: slider-vertical;
+      appearance: slider-vertical;
+      height: 100px;
+      width: 12px;
+      background: #2563eb;
+      cursor: pointer;
+    }   
   </style>
 </head>
 <body>
@@ -274,116 +349,202 @@
     <canvas id="snowfall"></canvas>
   </div>
 
+  <!-- Controles de música -->
+  <div id="audio-controls" aria-label="Controles de audio">
+    <button id="play-pause-btn" aria-label="Reproducir música">
+      <svg viewBox="0 0 24 24">
+        <path d="M6 4 L20 12 L6 20 Z" />
+      </svg>
+    </button>
+
+    <div id="volume-container">
+      <input
+        type="range"
+        id="volume-slider"
+        min="0"
+        max="100"
+        value="2"
+        aria-label="Control de volumen"
+      />
+    </div>
+  </div>
+
+  <audio id="audio-player" src="https://fortnite.gg/img/items/3340/audio.mp3?1" loop></audio>
+
   <script>
-    const canvas = document.getElementById("snowfall");
-const ctx = canvas.getContext("2d");
-let width, height;
-let particles = [];
-let animationFrameId;
+    // Música
+    const audioPlayer = document.getElementById('audio-player');
+    const volumeSlider = document.getElementById('volume-slider');
+    const playPauseBtn = document.getElementById('play-pause-btn');
 
-let mouse = { x: -100, y: -100 };
+    audioPlayer.volume = 0.02;
+    volumeSlider.value = 2;
 
-window.addEventListener("mousemove", e => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-});
+    const playIcon = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+    const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
-function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-}
+    let isPlaying = false;
+    playPauseBtn.innerHTML = playIcon;
+    playPauseBtn.setAttribute("aria-label", "Reproducir música");
 
-function createSnowflakes() {
-  particles = [];
-  for (let i = 0; i < 100; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 4 + 1,
-      angle: Math.random() * Math.PI * 2,
-      rotationSpeed: Math.random() * 0.02 + 0.005,
-      vx: 0,
-      vy: Math.random() * 1 + 0.5
+    playPauseBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        audioPlayer.pause();
+        playPauseBtn.innerHTML = playIcon;
+        playPauseBtn.setAttribute("aria-label", "Reproducir música");
+      } else {
+        audioPlayer.play().catch(err => {
+          alert('Error al reproducir audio: ' + err);
+        });
+        playPauseBtn.innerHTML = pauseIcon;
+        playPauseBtn.setAttribute("aria-label", "Pausar música");
+      }
+      isPlaying = !isPlaying;
     });
-  }
-}
 
-function updateSnowflakes() {
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
+    volumeSlider.addEventListener('input', (e) => {
+      audioPlayer.volume = e.target.value / 100;
+    });
 
-    p.angle += p.rotationSpeed;
+    audioPlayer.addEventListener('ended', () => {
+      isPlaying = false;
+      playPauseBtn.innerHTML = playIcon;
+      playPauseBtn.setAttribute("aria-label", "Reproducir música");
+    });
+  </script>
 
-    const dx = p.x - mouse.x;
-    const dy = p.y - mouse.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const minDist = 80;
+  <script>
+    // Mantener el cuadro de volumen visible 1 segundo tras salir del área
+    const audioControls = document.getElementById('audio-controls');
+    const volumeContainer = document.getElementById('volume-container');
 
-    if (dist < minDist) {
-      const force = (minDist - dist) / minDist;
-      const angle = Math.atan2(dy, dx);
-      p.vx += Math.cos(angle) * force * 0.5;
-      p.vy += Math.sin(angle) * force * 0.5;
+    let hideTimeout;
+
+    audioControls.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimeout);
+      volumeContainer.style.opacity = '1';
+      volumeContainer.style.pointerEvents = 'auto';
+    });
+
+    audioControls.addEventListener('mouseleave', () => {
+      hideTimeout = setTimeout(() => {
+        volumeContainer.style.opacity = '0';
+        volumeContainer.style.pointerEvents = 'none';
+      }, 500); // medio segundo para ocultar
+    });
+  </script>
+
+  <script>
+    // Nieve animada
+    const canvas = document.getElementById("snowfall");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+    let particles = [];
+    let animationFrameId;
+
+    let mouse = { x: -100, y: -100 };
+
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
 
-    p.vy += 0.02;
-
-    p.x += p.vx;
-    p.y += p.vy;
-
-    p.vx *= 0.98;
-    p.vy *= 0.995;
-
-    if (p.y > height) {
-      p.y = -10;
-      p.x = Math.random() * width;
-      p.vy = Math.random() * 1 + 0.5;
+    function createSnowflakes() {
+      particles = [];
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 4 + 1,
+          angle: Math.random() * Math.PI * 2,
+          rotationSpeed: Math.random() * 0.02 + 0.005,
+          vx: 0,
+          vy: Math.random() * 1 + 0.5
+        });
+      }
     }
-    if (p.x > width) p.x = 0;
-    else if (p.x < 0) p.x = width;
+
+    function updateSnowflakes() {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+
+        p.angle += p.rotationSpeed;
+
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const minDist = 80;
+
+        if (dist < minDist) {
+          const force = (minDist - dist) / minDist;
+          const angle = Math.atan2(dy, dx);
+          p.vx += Math.cos(angle) * force * 0.5;
+          p.vy += Math.sin(angle) * force * 0.5;
+        }
+
+        p.vy += 0.02;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vx *= 0.98;
+        p.vy *= 0.995;
+
+        if (p.y > height) {
+          p.y = -10;
+          p.x = Math.random() * width;
+          p.vy = Math.random() * 1 + 0.5;
+        }
+        if (p.x > width) p.x = 0;
+        else if (p.x < 0) p.x = width;
+      }
     }
-  }
 
-  function drawSnowflakes() {
-  ctx.clearRect(0, 0, width, height);
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
+    function drawSnowflakes() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
 
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.angle);
-    ctx.drawImage(snowflakeImage, -p.r * 3, -p.r * 3, p.r * 6, p.r * 6);
-    ctx.restore();
-  }
-  updateSnowflakes();
-  animationFrameId = requestAnimationFrame(drawSnowflakes);
-  }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.drawImage(snowflakeImage, -p.r * 3, -p.r * 3, p.r * 6, p.r * 6);
+        ctx.restore();
+      }
+      updateSnowflakes();
+      animationFrameId = requestAnimationFrame(drawSnowflakes);
+    }
 
     window.addEventListener("resize", () => {
-    resize();
-    createSnowflakes();
+      resize();
+      createSnowflakes();
     });
 
-  document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    if (!animationFrameId) {
-      drawSnowflakes();
-    }
-  } else {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        if (!animationFrameId) {
+          drawSnowflakes();
+        }
+      } else {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
     });
 
     resize();
     createSnowflakes();
 
     if (snowflakeImage.complete) {
-    drawSnowflakes();
-  } else {
-    snowflakeImage.onload = () => drawSnowflakes();
-  }  
-</script>
+      drawSnowflakes();
+    } else {
+      snowflakeImage.onload = () => drawSnowflakes();
+    }
+  </script>
 
 </body>
 </html>
