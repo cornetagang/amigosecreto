@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Randomizador de Presupuesto</title>
+  <link rel="icon" type="image/png" href="https://i.imgur.com/u71QEFc.png">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      max-width: 400px;
+      margin: 4rem auto 0rem;
+      padding-top: 50px; /* espacio para menú fijo */
+      background: linear-gradient(to bottom right, #d9e2ec);
+      text-align: center;
+      color: #333;
+    }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #2563eb;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    h1 {
+      color: #2563eb;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+    }
+    #result-box {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: #2563eb;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+      border-radius: 1rem;
+      box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+      user-select: none;
+      min-height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      font-size: 1.2rem;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+    }
+    button:hover {
+      background-color: #059669;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="file:///C:/Users/Benja/Desktop/Amigo%20secreto/AmigoSecreto.html">← Volver al Sorteo</a>
+  </nav>
+
+  <h1>Randomizador de Presupuesto</h1>
+
+  <button id="generate-btn">Generar Presupuesto</button>
+
+  <div id="result-box">El presupuesto será: —</div>
+
+  <script>
+    const btn = document.getElementById('generate-btn');
+    const resultBox = document.getElementById('result-box');
+
+    function getRandomBudget() {
+      return (Math.floor(Math.random() * 8) + 3) * 1000;
+    }
+
+    btn.addEventListener('click', () => {
+      btn.disabled = true; // para evitar múltiples clicks
+
+      let count = 0;
+      const animationDuration = 2500; // duración total animación en ms
+      const intervalTime = 50; // intervalo para cambiar número
+      const iterations = animationDuration / intervalTime;
+
+      const interval = setInterval(() => {
+        const randomNum = getRandomBudget();
+        resultBox.textContent = `El presupuesto será: $${randomNum.toLocaleString('es-CL')}`;
+        count++;
+        if (count >= iterations) {
+          clearInterval(interval);
+          btn.disabled = false; // reactivar botón
+        }
+      }, intervalTime);
+    });
+  </script>
+
+</body>
+</html>
