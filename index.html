@@ -280,6 +280,7 @@
     let width, height;
     let particles = [];
     let mouse = { x: -100, y: -100 };
+    let animationId = null;
 
     window.addEventListener("mousemove", e => {
       mouse.x = e.clientX;
@@ -292,7 +293,7 @@
     }
 
     function createSnowflakes() {
-      particles = []; // reinicia partículas al crear
+      particles = [];
       for (let i = 0; i < 100; i++) {
         particles.push({
           x: Math.random() * width,
@@ -310,10 +311,8 @@
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Girar copo
         p.angle += p.rotationSpeed;
 
-        // Alejar del cursor
         const dx = p.x - mouse.x;
         const dy = p.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -326,13 +325,11 @@
           p.vy += Math.sin(angle) * force * 0.5;
         }
 
-        // Gravedad constante
         p.vy += 0.02;
 
         p.x += p.vx;
         p.y += p.vy;
 
-        // Fricción suave
         p.vx *= 0.98;
         p.vy *= 0.995;
 
@@ -359,7 +356,20 @@
         ctx.restore();
       }
       updateSnowflakes();
-      requestAnimationFrame(drawSnowflakes);
+      animationId = requestAnimationFrame(drawSnowflakes);
+    }
+
+    function startAnimation() {
+      if (!animationId) {
+        animationId = requestAnimationFrame(drawSnowflakes);
+      }
+    }
+
+    function stopAnimation() {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
     }
 
     window.addEventListener("resize", () => {
@@ -367,10 +377,20 @@
       createSnowflakes();
     });
 
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        startAnimation();
+      } else {
+        stopAnimation();
+      }
+    });
+
+    // Inicialización
     resize();
     createSnowflakes();
+
     snowflakeImage.onload = () => {
-      drawSnowflakes();
+      startAnimation();
     };
   </script>
 
