@@ -61,7 +61,7 @@
       row.className = 'participant-row';
       row.innerHTML = `
         <input type="text" class="name" placeholder="Nombre" value="${name}" />
-        <input type="email" class="email" placeholder="correo@example.com" value="${email}" />
+        <input type="email" class="email" placeholder="correo@gmail.com" value="${email}" />
         <button type="button" class="remove" title="Eliminar">🗑️</button>`;
       row.querySelector('.remove').onclick = () => { row.remove(); };
       container.appendChild(row);
@@ -329,7 +329,7 @@
   <nav id="top-nav">
     <ul>
       <li><a href="https://cornetagang.github.io/hallamigosecreto/">Amigos Secretos</a></li>
-      <li><a href="https://cornetagang.github.io/presupuesto/">Presupuesto de este año</a></li>
+      <li><a href="https://cornetagang.github.io/presupuesto/">Presupuesto</a></li>
       <li><a href="https://cornetagang.github.io/listadeseos/">Lista de deseados</a></li>
     </ul>
   </nav>
@@ -548,3 +548,4 @@
 
 </body>
 </html>
+
