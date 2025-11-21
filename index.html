@@ -2,550 +2,145 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Amigo Secreto 2025</title>
-  <link rel="icon" type="image/png" href="https://i.imgur.com/u71QEFc.png">
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script>
-    const snowflakeImage = new Image();
-    snowflakeImage.src = "https://static.vecteezy.com/system/resources/previews/019/922/808/non_2x/illustration-of-3d-snowflake-png.png";
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amigo Secreto</title>
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp">
+  <link rel="stylesheet" href="css/style.css">
 
-    const EMAILJS_PUBLIC_KEY = "zrrCFqd2HeIsPvzfX";
-    const EMAILJS_SERVICE_ID = "service_9epv8tu";
-    const EMAILJS_TEMPLATE_ID = "template_otx8fjn";
-
-    (function () { emailjs.init(EMAILJS_PUBLIC_KEY); })();
-
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
-    function getParticipants() {
-      const rows = document.querySelectorAll('.participant-row');
-      const parts = [];
-      rows.forEach(row => {
-        const name = row.querySelector('.name').value.trim();
-        const email = row.querySelector('.email').value.trim();
-        if (name || email) {
-          if (!name || !email) throw new Error('Completa nombre y correo en todas las filas.');
-          parts.push({ name, email });
-        }
-      });
-      if (parts.length < 3) throw new Error('Al menos 3 participantes.');
-      return parts;
-    }
-
-    function generatePairs(participants, maxTries = 10000) {
-      const n = participants.length;
-      let receivers;
-      for (let t = 0; t < maxTries; t++) {
-        receivers = [...participants];
-        shuffle(receivers);
-        if (participants.some((p, i) => p.email === receivers[i].email)) continue;
-        let bad = false;
-        for (let i = 0; i < n; i++) {
-          const j = participants.findIndex(p => p.email === receivers[i].email);
-          if (receivers[j] && receivers[j].email === participants[i].email) { bad = true; break; }
-        }
-        if (bad) continue;
-        return receivers;
-      }
-      throw new Error('No se pudo generar una asignación válida. Intenta de nuevo.');
-    }
-
-    function addRow(name = '', email = '') {
-      const container = document.getElementById('participants');
-      const row = document.createElement('div');
-      row.className = 'participant-row';
-      row.innerHTML = `
-        <input type="text" class="name" placeholder="Nombre" value="${name}" />
-        <input type="email" class="email" placeholder="correo@gmail.com" value="${email}" />
-        <button type="button" class="remove" title="Eliminar">🗑️</button>`;
-      row.querySelector('.remove').onclick = () => { row.remove(); };
-      container.appendChild(row);
-    }
-
-    async function handleDraw() {
-      let participants;
-      try {
-        participants = getParticipants();
-      } catch (e) {
-        alert('⚠️ ' + e.message);
-        return;
-      }
-      try {
-        const receivers = generatePairs(participants);
-        await Promise.all(
-          participants.map((giver, idx) =>
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-              to_email: giver.email,
-              friend_name: receivers[idx].name,
-            })
-          )
-        );
-        alert('✔️ Correos enviados. ¡Sorteo completado!');
-        document.getElementById('participants').innerHTML = '';
-        for (let i = 0; i < 3; i++) addRow();
-      } catch (err) {
-        console.error(err);
-        alert('⚠️ ' + err.message);
-      }
-    }
-
-    window.onload = () => { for (let i = 0; i < 3; i++) addRow(); };
-  </script>
-  <style>
-    body {
-      margin: 0;
-      padding-top: 60px;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: #fdf6e3; /* crema */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow-x: hidden;
-    }
-    
-    #sorteo {
-      margin-top: 1.5rem;
-    }
-    
-    #top-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #2563eb;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 9999;
-    }
-    #top-nav ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      align-items: center;
-      height: 60px;
-    }
-    #top-nav ul li a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      padding: 0.5rem 1rem;
-      border-radius: 0.3rem;
-      transition: background-color 0.3s ease;
-    }
-    #top-nav ul li a:hover {
-      background-color: #1d4ed8;
-    }
-
-    section {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      margin-bottom: 2rem;
-      position: relative;
-      z-index: 1; /* para estar delante de la nieve */
-      max-width: 900px;
-      width: 90%;
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      text-align: center;
-      color: #e11d48;
-      border-bottom: 2px solid #e11d48;
-      padding-bottom: 0.5rem;
-      margin-bottom: 2rem;
-    }
-    #participants {
-      background: #ffffff;
-      padding: 1.5rem;
-      border-radius: 1rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .container {
-      max-width: 900px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .participant-row {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .participant-row input {
-      flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.4rem;
-      font-size: 0.9rem;
-    }
-    .participant-row .remove {
-      background: #ef4444;
-      color: #fff;
-      border: none;
-      padding: 0 0.75rem;
-      border-radius: 0.4rem;
-      cursor: pointer;
-    }
-    .participant-row .remove:hover {
-      background: #dc2626;
-    }
-    .actions {
-      margin-top: 1.25rem;
-      display: flex;
-      justify-content: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-    }
-    #add-btn {
-      background: #10b981;
-      color: #fff;
-    }
-    #add-btn:hover {
-      background: #059669;
-    }
-    #draw-btn {
-      background: #2563eb;
-      color: #fff;
-    }
-    #draw-btn:hover {
-      background: #1d4ed8;
-    }
-    .note {
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: #555;
-      text-align: center;
-    }
-    .snow {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    #audio-controls {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
-      z-index: 10000;
-    }
-
-/* Botón de play/pause */
-    #play-pause-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background-color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      border: none;
-      outline: none;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s ease;
-      z-index: 2;
-    }
-
-    #play-pause-btn:hover {
-      background-color: #d1e3ff;
-    }
-
-    #play-pause-btn svg {
-      width: 22px;
-      height: 22px;
-      fill: #2563eb;
-    }
-
-/* Cuadro que contiene la barra de volumen */
-    #volume-container {
-      position: absolute;
-      bottom: 52px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: white;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition-delay: 0.2s; /* pequeño retardo antes de ocultarse */
-    }
-
-/* Mostrar volumen al pasar el mouse por el botón o la caja */
-    #play-pause-btn:hover + #volume-container,
-    #volume-container:hover {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-/* Slider de volumen vertical */
-    #volume-slider {
-      writing-mode: bt-lr;
-      -webkit-appearance: slider-vertical;
-      appearance: slider-vertical;
-      height: 100px;
-      width: 12px;
-      background: #2563eb;
-      cursor: pointer;
-    }   
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
 
-  <nav id="top-nav">
-    <ul>
-      <li><a href="https://cornetagang.github.io/hallamigosecreto/">Amigos Secretos</a></li>
-      <li><a href="https://cornetagang.github.io/presupuesto/">Presupuesto</a></li>
-      <li><a href="https://cornetagang.github.io/listadeseos/">Lista de deseados</a></li>
-    </ul>
-  </nav>
-
-  <section id="sorteo">
-    <h1>🎅 Amigo Secreto 2025 🎄</h1>
-
-    <div id="participants"></div>
-
-    <div class="actions">
-      <button id="add-btn" type="button" onclick="addRow()">+ Añadir participante</button>
-      <button id="draw-btn" onclick="handleDraw()">Sortear y Enviar</button>
+  <div id="auth-modal-overlay">
+    <div id="auth-modal-content">
+      <h1>Bienvenido</h1>
+      <div id="login-form">
+        <h3>Iniciar Sesión</h3>
+        <input type="email" id="login-email" placeholder="Correo" autocomplete="email" required>
+        <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" required>
+        <button id="login-btn">Entrar</button>
+        <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
+      </div>
+      <div id="register-form" style="display:none;">
+        <h3>Crear Cuenta</h3>
+        <input type="text" id="register-name" placeholder="Tu Nombre" autocomplete="name" required>
+        <input type="email" id="register-email" placeholder="Correo" autocomplete="email" required>
+        <input type="password" id="register-password" placeholder="Contraseña" autocomplete="new-password" required>
+        <button id="register-btn">Registrarme</button>
+        <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
+      </div>
     </div>
-  </section>
-
-  <div class="snow">
-    <canvas id="snowfall"></canvas>
   </div>
 
-  <!-- Controles de música -->
+  <div id="app-wrapper" style="display:none;">
+    
+    <nav id="top-nav">
+      <ul>
+        <li><a href="#" class="nav-btn active" data-target="inicio-section">Inicio</a></li>
+        <li><a href="#" class="nav-btn" data-target="sorteo-section">Sorteo</a></li>
+        <li><a href="#" class="nav-btn" data-target="historial-section">Amigo Secreto 2024</a></li>
+        <li><a href="#" class="nav-btn" data-target="deseos-section">Listas de deseados</a></li>
+        <li><a href="#" class="nav-btn" data-target="perfil-section">Mi Perfil</a></li> 
+        <li><a href="https://store.steampowered.com/specials" target="_blank" rel="noopener noreferrer" id="steam-nav-link">Ofertas Steam</a></li>
+
+        <li class="nav-user-group">
+          <span id="nav-username"></span>
+          <a href="#" id="logout-btn" style="background-color:#e11d48;">Salir</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div id="content-container">
+      
+      <section id="inicio-section" class="content-section">
+        
+        <div id="secret-friend-container">
+          </div>
+
+        <div class="instructions-card">
+          <h3>¿Cómo funciona el Amigo Secreto?</h3>
+          <p>La idea de este juego es simple: cada participante le hace un regalo a otro participante, ¡pero nadie sabe quién le regala a quién hasta el final!</p>
+          <ul>
+            <li><strong>Sorteo:</strong> La aplicación asigna a cada persona un "Amigo Secreto" de forma aleatoria y secreta.</li>
+            <li><strong>Agregarse en Steam:</strong> Agregarse en steam antes del día de la entrega es lo ideal para evitar la espera de 1 día que tiene steam para regalarse algo. (Pueden dejar su código en la sección <a href="#" class="nav-btn-inline" data-target="perfil-section">Mi Perfil</a>).</li>
+            <li><strong>Lista de Deseos:</strong> Revisa la <a href="#" class="nav-btn-inline" data-target="deseos-section">Lista de deseados</a> para ver qué quiere tu amigo.</li>
+            <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo; No hace falta regirse por la lista de deseados, puede ser lo que quieras.</li>
+            <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord.</li>
+          </ul>
+          <p class="event-date">
+            La entrega de regalos será el: <strong>?? de diciembre de 2025</strong>
+          </p>
+        </div>
+
+      </section>
+      
+      <section id="sorteo-section" class="content-section hidden">
+        </section>
+      
+      <section id="historial-section" class="content-section hidden">
+        <div id="historial-btn-container" style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; flex-wrap: wrap;"></div>
+        <div id="historial-contenido" class="historial-container" style="display: none; margin-top: 2rem;"></div>
+      </section>
+
+      <section id="perfil-section" class="content-section hidden">
+        <div class="my-wishlist-card">
+          <h3>Configura tu Perfil Steam</h3>
+          
+          <div style="background-color: #f0fdf4; border-left: 4px solid var(--btn-green); padding: 15px; margin-bottom: 20px; color: #14532d;">
+            <p style="margin:0;"><strong>💡 Importante:</strong> Agregarse en Steam antes del día de la entrega es ideal para evitar la restricción de espera de 3 días (o 1 año si no tienen autenticador móvil) que tiene Steam para enviar regalos.</p>
+          </div>
+
+          <div class="form-group">
+             <label style="display:block; margin-bottom:5px; font-weight:600; color:var(--nav-bg);">Tu Código de Amigo:</label>
+             <input type="text" id="my-steam-friend-code" placeholder="Ej: 12345678">
+             <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">Copia esto desde <a href="https://steamcommunity.com/my/friends/add" target="_blank" rel="noopener noreferrer" style="color: var(--btn-green); text-decoration: underline; font-weight: bold;"> aqui</a> o desde la opción "Añadir a un amigo" en Steam para que los demás te agreguen fácilmente.</p>
+          </div>
+
+          <hr class="card-divider">
+
+          <p>Pega la URL de tu <a href="https://store.steampowered.com/wishlist/" target="_blank" rel="noopener noreferrer" class="nav-btn-inline">Lista de Deseados de Steam</a> para que tu amigo secreto sepa qué regalarte.</p>
+          
+          <div class="form-group">
+            <input type="text" id="my-wishlist-url" placeholder="https://store.steampowered.com/wishlist/id/tu_usuario/">
+          </div>
+
+          <button id="save-profile-btn" class="btn-primary" style="margin-top: 10px;">Guardar Mi Perfil</button>
+        </div>
+      </section>
+
+      <section id="deseos-section" class="content-section hidden">
+        <div class="sorteo-list-container">
+          <h2 style="text-align: center;" id="wishlist-sorteo-title">🎁 Tus Sorteos 🎁</h2>
+          <div class="wishlist-container" id="wishlist-container-dynamic">
+             </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="snow"><canvas id="snowfall"></canvas></div>
+  
   <div id="audio-controls" aria-label="Controles de audio">
-    <button id="play-pause-btn" aria-label="Reproducir música">
-      <svg viewBox="0 0 24 24">
-        <path d="M6 4 L20 12 L6 20 Z" />
-      </svg>
-    </button>
-
-    <div id="volume-container">
-      <input
-        type="range"
-        id="volume-slider"
-        min="0"
-        max="100"
-        value="2"
-        aria-label="Control de volumen"
-      />
+    <button id="play-pause-btn" aria-label="Reproducir música"><svg viewBox="0 0 24 24"><path d="M6 4 L20 12 L6 20 Z" /></svg></button>
+    <div id="volume-container"><input type="range" id="volume-slider" min="0" max="100" value="2" aria-label="Control de volumen" /></div>
+  </div>
+  <audio id="audio-player" src="https://fortnite.gg/img/items/3340/audio.mp3?1" loop></audio>
+  
+  <div id="app-modal-overlay" class="modal-overlay hidden">
+    <div class="app-modal-content">
+      <h3 id="app-modal-title"></h3>
+      <p id="app-modal-message"></p>
+      <div id="app-modal-prompt-container" class="hidden"><input type="text" id="app-modal-prompt-input"></div>
+      <div class="modal-actions">
+        <button id="app-modal-cancel-btn" class="btn-secondary" style="background-color: #6b7280;">Cancelar</button>
+        <button id="app-modal-confirm-btn" class="btn-primary">Aceptar</button>
+      </div>
     </div>
   </div>
 
-  <audio id="audio-player" src="https://fortnite.gg/img/items/3340/audio.mp3?1" loop></audio>
-
-  <script>
-    // Música
-    const audioPlayer = document.getElementById('audio-player');
-    const volumeSlider = document.getElementById('volume-slider');
-    const playPauseBtn = document.getElementById('play-pause-btn');
-
-    audioPlayer.volume = 0.02;
-    volumeSlider.value = 2;
-
-    const playIcon = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-    const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-
-    let isPlaying = false;
-    playPauseBtn.innerHTML = playIcon;
-    playPauseBtn.setAttribute("aria-label", "Reproducir música");
-
-    playPauseBtn.addEventListener('click', () => {
-      if (isPlaying) {
-        audioPlayer.pause();
-        playPauseBtn.innerHTML = playIcon;
-        playPauseBtn.setAttribute("aria-label", "Reproducir música");
-      } else {
-        audioPlayer.play().catch(err => {
-          alert('Error al reproducir audio: ' + err);
-        });
-        playPauseBtn.innerHTML = pauseIcon;
-        playPauseBtn.setAttribute("aria-label", "Pausar música");
-      }
-      isPlaying = !isPlaying;
-    });
-
-    volumeSlider.addEventListener('input', (e) => {
-      audioPlayer.volume = e.target.value / 100;
-    });
-
-    audioPlayer.addEventListener('ended', () => {
-      isPlaying = false;
-      playPauseBtn.innerHTML = playIcon;
-      playPauseBtn.setAttribute("aria-label", "Reproducir música");
-    });
-  </script>
-
-  <script>
-    // Mantener el cuadro de volumen visible 1 segundo tras salir del área
-    const audioControls = document.getElementById('audio-controls');
-    const volumeContainer = document.getElementById('volume-container');
-
-    let hideTimeout;
-
-    audioControls.addEventListener('mouseenter', () => {
-      clearTimeout(hideTimeout);
-      volumeContainer.style.opacity = '1';
-      volumeContainer.style.pointerEvents = 'auto';
-    });
-
-    audioControls.addEventListener('mouseleave', () => {
-      hideTimeout = setTimeout(() => {
-        volumeContainer.style.opacity = '0';
-        volumeContainer.style.pointerEvents = 'none';
-      }, 500); // medio segundo para ocultar
-    });
-  </script>
-
-  <script>
-    // Nieve animada
-    const canvas = document.getElementById("snowfall");
-    const ctx = canvas.getContext("2d");
-    let width, height;
-    let particles = [];
-    let animationFrameId;
-
-    let mouse = { x: -100, y: -100 };
-
-    window.addEventListener("mousemove", e => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-
-    function createSnowflakes() {
-      particles = [];
-      for (let i = 0; i < 100; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          r: Math.random() * 4 + 1,
-          angle: Math.random() * Math.PI * 2,
-          rotationSpeed: Math.random() * 0.02 + 0.005,
-          vx: 0,
-          vy: Math.random() * 1 + 0.5
-        });
-      }
-    }
-
-    function updateSnowflakes() {
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-
-        p.angle += p.rotationSpeed;
-
-        const dx = p.x - mouse.x;
-        const dy = p.y - mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = 80;
-
-        if (dist < minDist) {
-          const force = (minDist - dist) / minDist;
-          const angle = Math.atan2(dy, dx);
-          p.vx += Math.cos(angle) * force * 0.5;
-          p.vy += Math.sin(angle) * force * 0.5;
-        }
-
-        p.vy += 0.02;
-
-        p.x += p.vx;
-        p.y += p.vy;
-
-        p.vx *= 0.98;
-        p.vy *= 0.995;
-
-        if (p.y > height) {
-          p.y = -10;
-          p.x = Math.random() * width;
-          p.vy = Math.random() * 1 + 0.5;
-        }
-        if (p.x > width) p.x = 0;
-        else if (p.x < 0) p.x = width;
-      }
-    }
-
-    function drawSnowflakes() {
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
-        ctx.drawImage(snowflakeImage, -p.r * 3, -p.r * 3, p.r * 6, p.r * 6);
-        ctx.restore();
-      }
-      updateSnowflakes();
-      animationFrameId = requestAnimationFrame(drawSnowflakes);
-    }
-
-    window.addEventListener("resize", () => {
-      resize();
-      createSnowflakes();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        if (!animationFrameId) {
-          drawSnowflakes();
-        }
-      } else {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-    });
-
-    resize();
-    createSnowflakes();
-
-    if (snowflakeImage.complete) {
-      drawSnowflakes();
-    } else {
-      snowflakeImage.onload = () => drawSnowflakes();
-    }
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-
