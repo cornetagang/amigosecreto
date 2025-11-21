@@ -1,0 +1,698 @@
+/* =========================================
+   1. VARIABLES Y CONFIGURACIÓN BASE
+   ========================================= */
+:root {
+  /* --- PALETA DE COLORES NAVIDEÑA --- */
+  --bg-crema: #e6be9a;       /* Fondo principal */
+  --nav-bg: #1d351d;         /* Verde muy oscuro (Nav y textos fuertes) */
+  --nav-hover: #325632;      /* Verde bosque (Hover y elementos activos) */
+  
+  --btn-green: #325632;      /* Botones de acción */
+  --btn-green-hover: #1d351d; 
+  
+  --title-color: #8b181d;    /* Rojo profundo (Títulos y bordes) */
+  --accent: #6f0f11;         /* Rojo muy oscuro (Hover peligrosos) */
+  --accent-2: #8b181d;
+  
+  --result-bg: #1d351d;
+  --result-color: #fff;
+}
+
+/* Reseteos de scrollbar */
+html { scrollbar-width: none; }
+body::-webkit-scrollbar { display: none; }
+body { -ms-overflow-style: none; }
+
+body {
+  margin: 0;
+  padding-top: 80px; 
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-crema); 
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Utilidades */
+.hidden { display: none !important; }
+
+/* =========================================
+   2. NAVEGACIÓN (#top-nav)
+   ========================================= */
+#top-nav {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  background-color: var(--nav-bg);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 9999;
+}
+#top-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  position: relative; 
+}
+#top-nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  transition: background-color 0.3s ease;
+}
+#top-nav ul li a:hover,
+#top-nav ul li a.active {
+  background-color: var(--nav-hover);
+}
+/* Grupo de usuario a la derecha */
+#top-nav ul li.nav-user-group {
+  position: absolute; 
+  right: 1rem; 
+  top: 50%;
+  transform: translateY(-50%); 
+  display: flex;
+  align-items: center;
+  gap: 1rem; 
+}
+#nav-username {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  opacity: 0.8;
+  user-select: none; 
+  white-space: nowrap; 
+}
+/* Botones especiales del Nav */
+#logout-btn {
+  background-color: var(--title-color) !important;
+}
+#logout-btn:hover {
+  background-color: var(--accent) !important;
+}
+#steam-nav-link {
+  color: #c7d5e0;
+  background-color: #171a21; /* Gris Steam */
+}
+#steam-nav-link:hover {
+  color: #ffffff;
+  background-color: #2a475e; /* Azul Steam */
+}
+.nav-btn-inline {
+  color: var(--nav-bg);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.nav-btn-inline:hover {
+  color: var(--nav-hover);
+}
+
+/* =========================================
+   3. COMPONENTES GENERALES (Botones, Inputs)
+   ========================================= */
+.content-section {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 2rem;
+  max-width: 1100px; 
+  width: 95%;
+}
+
+/* Botones */
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+button.btn-primary {
+  background: var(--btn-green);
+  color: #fff;
+}
+button.btn-primary:hover {
+  background: var(--btn-green-hover);
+}
+button.btn-secondary {
+  background: var(--nav-bg);
+  color: #fff;
+}
+button.btn-secondary:hover {
+  background: var(--nav-hover);
+}
+.btn-icon {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: none;
+  width: 36px; height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-icon:hover { background: #e5e7eb; color: #000; }
+.btn-icon svg { width: 20px; height: 20px; }
+
+/* Formularios */
+.form-group { margin-bottom: 1rem; }
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 0.4rem;
+  box-sizing: border-box; 
+  font-size: 0.95rem;
+}
+.form-group-inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.form-group-inline input {
+  flex-grow: 1; 
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 0.4rem;
+  font-size: 0.95rem;
+  width: 100%; 
+}
+.form-group-inline button {
+  width: auto; 
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  background-color: #f3f4f6;
+  color: #333;
+}
+.card-divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 2rem 0;
+}
+
+/* =========================================
+   4. MODALES (Login y App)
+   ========================================= */
+/* Overlay Común */
+#auth-modal-overlay, .modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* Modal Login */
+#auth-modal-overlay {
+  background: rgba(0,0,0,0.9);
+  z-index: 10000;
+}
+#auth-modal-content {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  width: 90%; max-width: 400px;
+  text-align: center;
+}
+#auth-modal-content h1, #auth-modal-content h3 {
+  color: var(--nav-bg);
+  margin: 0 0 1.5rem 0;
+}
+#auth-modal-content button {
+  background: var(--nav-bg);
+  color: white;
+  margin-top: 0.5rem;
+}
+#auth-modal-content a { color: var(--nav-bg); }
+
+/* Modal App (Alerts/Prompts) */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20000;
+}
+.app-modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%; max-width: 450px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 1;
+}
+.app-modal-content h3 {
+  color: var(--nav-bg);
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+.modal-actions {
+  display: flex; gap: 1rem; justify-content: center;
+}
+.modal-actions button { width: auto; }
+
+/* =========================================
+   5. SECCIÓN INICIO (Home)
+   ========================================= */
+#inicio-section { max-width: 900px; margin: 0 auto; width: 95%; }
+
+.secret-friend-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  border: 2px solid var(--nav-bg);
+}
+.secret-friend-card.placeholder {
+  justify-content: center; color: #555;
+  border-style: dashed; border-color: #aaa; background: #fafafa;
+}
+.secret-friend-card.placeholder.error {
+  color: var(--title-color); border-color: var(--title-color);
+}
+.secret-friend-info {
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.secret-name {
+  font-size: 1.75rem; font-weight: 700;
+  color: var(--nav-hover);
+  letter-spacing: 4px;
+  transition: all 0.3s ease;
+}
+.secret-friend-card:not(.is-revealed) .secret-name {
+  filter: blur(5px); user-select: none;
+}
+
+.instructions-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem 2.5rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  position: relative; z-index: 1;
+  line-height: 1.6;
+}
+.instructions-card h3 {
+  font-size: 1.6rem;
+  color: var(--nav-bg);
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid var(--nav-bg);
+  padding-bottom: 0.5rem;
+}
+.instructions-card .event-date {
+  font-size: 1.1rem; font-weight: 500; color: #000;
+  text-align: center;
+  background: #fff;
+  border: 2px dashed var(--title-color);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+.instructions-card .event-date strong { color: var(--title-color); }
+
+/* =========================================
+   6. SECCIÓN SORTEOS (Gestión)
+   ========================================= */
+.sorteo-container {
+  display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;
+}
+.sorteo-actions-card, .sorteo-list-container {
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  position: relative; z-index: 1;
+}
+.sorteo-actions-card h3 {
+  font-size: 1.4rem; color: var(--nav-bg); margin: 0 0 0.5rem 0;
+}
+.sorteo-list-container h2 {
+  font-size: 1.7rem; color: var(--title-color);
+  margin-top: 0; padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--title-color);
+  text-align: center;
+}
+
+/* Tarjetas individuales de sorteo */
+.sorteo-card {
+  border: 1px solid #ddd;
+  border-radius: 0.8rem;
+  padding: 1.5rem;
+  background: #fafafa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+.sorteo-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem; margin-bottom: 1rem; gap: 1rem;
+}
+.sorteo-card-title h4 {
+  margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--nav-hover);
+}
+.sorteo-card-title span {
+  font-size: 0.9rem; font-weight: 600;
+  padding: 0.3rem 0.6rem; border-radius: 99px;
+}
+.status-abierto { color: var(--btn-green-hover); background-color: #d1fae5; }
+.status-realizado { color: #555; background-color: #e5e5e5; }
+
+.sorteo-card ul {
+  list-style: none; padding: 0; margin: 0 0 1.5rem 0;
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+}
+.sorteo-card ul li {
+  font-size: 0.9rem; background: #eee;
+  padding: 0.3rem 0.7rem; border-radius: 0.4rem;
+}
+.admin-controls { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.btn-icon.btn-delete-sorteo:hover { background: #fee2e2; color: #dc2626; }
+
+/* Entorno de Pruebas */
+#test-environment-box {
+  border: 2px dashed var(--title-color);
+  background: #fff; padding: 1rem;
+  border-radius: 0.8rem; margin-top: 2rem;
+}
+#test-environment-box h4 { color: var(--title-color); text-align: center; margin: 0 0 1rem 0; }
+#test-environment-box button { background-color: var(--title-color); color: white; }
+#test-environment-box button:hover { background-color: var(--accent); }
+
+/* =========================================
+   7. SECCIÓN LISTAS DE DESEOS (Grid y Perfil)
+   ========================================= */
+/* Tarjeta de "Mi Perfil" */
+.my-wishlist-card {
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  position: relative; z-index: 1;
+  max-width: 1000px; margin: 0 auto 2rem auto;
+}
+.my-wishlist-card h3 {
+  font-size: 1.4rem; color: var(--nav-bg); margin: 0 0 0.5rem 0;
+}
+
+/* Grid de Participantes */
+.wishlist-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 20px;
+  max-width: 1000px; width: 90%;
+  margin: 0 auto; z-index: 1;
+}
+
+/* Tarjeta Compacta de Usuario (Wish Box) */
+.wish-box {
+  background: #fff;
+  border: 2px solid var(--title-color);
+  border-radius: 20px; /* Redondeado suave */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  position: relative;
+  z-index: 1;
+  
+  display: flex;
+  flex-direction: column;
+  /* Ajustes Compactos */
+  padding: 15px;
+  min-height: 130px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.wish-box:hover { transform: scale(1.05); }
+
+.wish-box span {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--nav-hover);
+  margin-bottom: 5px;
+  text-align: center;
+  display: block;
+}
+
+/* Contenedor de acciones dentro de la tarjeta */
+.wish-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Icono de Steam */
+.wishlist-icon-link img {
+  width: 32px;  /* Tamaño compacto */
+  height: 32px;
+  transition: transform 0.2s;
+}
+.wishlist-icon-link:hover img { transform: scale(1.1); }
+
+/* Botón Copiar Código (Estilo Píldora) */
+.btn-copy-code {
+  width: auto;
+  max-width: 100%;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border-radius: 20px; /* Píldora */
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-copy-code:hover {
+  background-color: #e5e7eb;
+  border-color: #bbb;
+}
+.btn-copy-code.copied {
+  background-color: var(--btn-green);
+  color: white;
+  border-color: var(--btn-green);
+}
+
+/* Enlace de texto simple si no es código */
+.steam-profile-link {
+  font-size: 0.85rem; color: var(--nav-bg); text-decoration: underline;
+}
+.no-wishlist {
+  font-size: 0.8rem; color: #888; margin: auto 0;
+}
+
+/* =========================================
+   8. SECCIÓN HISTORIAL
+   ========================================= */
+#historial-section { text-align: center; }
+#historial-section .historial-btn {
+  background-color: var(--nav-bg); color: white;
+  padding: 1rem 2rem; border-radius: 12px;
+  font-size: 1.4rem; width: auto;
+  margin-top: 0;
+}
+#historial-section .historial-btn:hover {
+  transform: scale(1.02); background-color: var(--nav-hover);
+}
+#historial-section .historial-btn.active {
+  background-color: var(--nav-hover); transform: scale(0.98);
+}
+#historial-section .grid {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 30px; max-width: 1000px; margin: 0 auto;
+}
+#historial-section .section-box {
+  flex: 1 1 calc(33.333% - 30px); max-width: 300px;
+}
+#historial-section .person-box {
+  background-color: var(--nav-bg); color: white;
+  padding: 10px 12px; border-radius: 8px; font-weight: bold;
+  width: 90px; font-size: 14px;
+}
+#historial-section .gift-image {
+  width: 100%; border-radius: 8px; transition: transform 0.3s;
+}
+#historial-section .gift-image:hover { transform: scale(1.03); }
+.historial-placeholder {
+  padding: 30px; font-size: 1.6rem; color: #444;
+  background: #fff; border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin: 2rem auto; max-width: 960px;
+  position: relative; z-index: 1;
+}
+
+/* =========================================
+   9. AMBIENTE (Nieve y Audio)
+   ========================================= */
+.snow {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: -1;
+}
+
+#audio-controls {
+  position: fixed; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column-reverse; align-items: center;
+  z-index: 10000;
+}
+#play-pause-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%; background-color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+#play-pause-btn svg { width: 22px; height: 22px; fill: var(--nav-bg); }
+#volume-container {
+  position: absolute; bottom: 52px; left: 50%;
+  transform: translateX(-50%);
+  background-color: white; padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#play-pause-btn:hover + #volume-container,
+#volume-container:hover {
+  opacity: 1; pointer-events: auto;
+}
+#volume-slider {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical; appearance: slider-vertical;
+  height: 100px; width: 12px;
+  background: var(--nav-bg); cursor: pointer;
+}
+
+/* Estilos para los campos de texto del Modal (Login/Registro) */
+#auth-modal-content input {
+  width: 100%;               /* Que ocupe todo el ancho disponible */
+  display: block;            /* Forzar que cada uno esté en su propia línea */
+  padding: 12px 15px;        /* Relleno cómodo para escribir */
+  margin-bottom: 15px;       /* Espacio entre los campos */
+  border: 2px solid #e5e7eb; /* Borde gris suave y moderno */
+  border-radius: 8px;        /* Bordes redondeados */
+  box-sizing: border-box;    /* IMPORTANTE: Para que el padding no rompa el ancho */
+  font-size: 1rem;           /* Texto legible */
+  background-color: #f9fafb; /* Fondo gris muy clarito */
+  transition: all 0.3s ease; /* Animación suave al hacer clic */
+  outline: none;             /* Quitar el borde azul feo por defecto */
+}
+
+/* Efecto cuando haces clic en el campo */
+#auth-modal-content input:focus {
+  border-color: var(--nav-bg); /* Se pone verde oscuro (tu color de tema) */
+  background-color: #fff;      /* El fondo se vuelve blanco puro */
+  box-shadow: 0 0 0 3px rgba(29, 53, 29, 0.1); /* Pequeño resplandor verde */
+}
+
+/* --- ESTILOS OPCIÓN 1: STEAM CARD --- */
+.btn-steam-card {
+  background: #171a21; /* Fondo oscuro oficial de Steam */
+  color: #c7d5e0;      /* Color de texto Steam */
+  border: 1px solid #2a475e;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 210px; /* Ancho máximo controlado */
+  text-align: left;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-steam-card:hover {
+  background: #2a475e; /* Se ilumina un poco al pasar el mouse */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+/* Efecto cuando se copia */
+.btn-steam-card.copied {
+  background: #325632 !important; /* Verde de éxito */
+  border-color: #4ade80;
+}
+
+.btn-steam-card img {
+  width: 24px !important; /* Logo pequeño dentro de la tarjeta */
+  height: 24px !important;
+  opacity: 0.9;
+}
+
+.btn-steam-card .steam-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  line-height: 1.2;
+}
+
+.btn-steam-card .label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  opacity: 0.6;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn-steam-card .code {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 1px;
+  font-family: monospace; /* Fuente tipo código para los números */
+}
+
+.btn-steam-card .copy-icon {
+  font-size: 1.1rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.btn-steam-card:hover .copy-icon {
+  opacity: 1;
+  color: #fff;
+}
+/* =========================================
+   10. MEDIA QUERIES (Responsive)
+   ========================================= */
+@media (max-width: 1000px) {
+  .wishlist-container { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .sorteo-container { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .wishlist-container { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .wishlist-container { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .wish-box { padding: 10px; min-height: 110px; }
+  .wish-box span { font-size: 1rem; }
+  .btn-copy-code { font-size: 0.7rem; padding: 4px 8px; }
+}
