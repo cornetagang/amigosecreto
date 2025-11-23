@@ -18,6 +18,11 @@
   --result-color: #fff;
 }
 
+/* --- RESET CRÍTICO PARA ENCUADRE --- */
+* {
+  box-sizing: border-box; /* Esto arregla que los paddings no deformen las cajas */
+}
+
 /* Reseteos de scrollbar */
 html { scrollbar-width: none; }
 body::-webkit-scrollbar { display: none; }
@@ -102,6 +107,9 @@ body {
   border-radius: 0; box-shadow: none;
   margin-bottom: 2rem;
   max-width: 1100px; width: 95%;
+  /* Centrado extra seguro */
+  margin-left: auto; 
+  margin-right: auto;
 }
 
 button {
@@ -307,17 +315,12 @@ button.btn-secondary:hover { background: var(--nav-hover); }
   text-align: center; display: block;
 }
 .wish-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;    /* Centra horizontalmente a los hijos (Icono y Botón) */
-  justify-content: center;
-  width: 100%;
-  gap: 10px;              /* Espacio entre el icono y el botón */
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  width: 100%; gap: 10px;
 }
 .wishlist-icon-link {
-  display: inline-flex;   /* Para que se comporte bien dentro del flex padre */
-  justify-content: center;
-  align-items: center;
+  display: inline-flex; justify-content: center; align-items: center;
 }
 .wishlist-icon-link img { width: 32px; height: 32px; transition: transform 0.2s; }
 .wishlist-icon-link:hover img { transform: scale(1.1); }
@@ -360,18 +363,12 @@ button.btn-secondary:hover { background: var(--nav-hover); }
   box-sizing: border-box; border: 1px solid rgba(0,0,0,0.05);
 }
 #historial-section .section-box .container {
-  display: flex !important;      /* Activa el modo flexible */
-  flex-direction: row !important;/* Dirección Horizontal */
-  align-items: center;           /* Centrado verticalmente */
-  justify-content: center;       /* Centrado al medio */
-  gap: 10px;                     /* Espacio entre cajitas y flecha */
-  width: 100%;
-  margin-bottom: 12px;           /* Espacio antes de la foto */
+  display: flex !important; flex-direction: row !important;
+  align-items: center; justify-content: center;
+  gap: 10px; width: 100%; margin-bottom: 12px;
 }
 #historial-section .arrow {
-  font-size: 1.2rem;
-  line-height: 1;
-  margin-top: -2px; /* Pequeño ajuste visual */
+  font-size: 1.2rem; line-height: 1; margin-top: -2px;
 }
 #historial-section .person-box {
   background-color: var(--nav-bg); color: white;
@@ -485,7 +482,30 @@ button.btn-secondary:hover { background: var(--nav-hover); }
   }
 
   /* 5. AJUSTES COMPONENTES EN MÓVIL */
-  .content-section { width: 100%; padding: 0 12px; margin-bottom: 20px; }
+  /* Asegura encuadre perfecto igual que Inicio */
+  .content-section { 
+    width: 100%; 
+    padding: 0 12px; 
+    margin-bottom: 20px; 
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* ARREGLOS ESPECÍFICOS PARA ENCUADRE (Sorteo y Perfil) */
+  .sorteo-actions-card, 
+  .my-wishlist-card, 
+  .sorteo-list-container {
+    padding: 1.5rem; /* Un poco menos de padding que en PC */
+    width: 100%;
+  }
+
+  /* ARREGLO PARA HISTORIAL (Caja Roja) */
+  #historial-section .historial-container {
+    width: 100%; 
+    padding: 20px;
+    border-width: 2px; /* Borde un poco más fino */
+    box-sizing: border-box;
+  }
   
   /* Inputs grandes para dedos */
   input { font-size: 16px !important; padding: 12px; }
@@ -493,11 +513,18 @@ button.btn-secondary:hover { background: var(--nav-hover); }
   .form-group-inline { flex-direction: column; gap: 10px; }
   .form-group-inline button { width: 100%; }
 
-  /* Grid de Deseos (2 columnas) */
-  .wishlist-container { padding: 0; gap: 10px; justify-content: space-between; }
+  /* ARREGLO PARA LISTAS (Centrado) */
+  .wishlist-container { 
+    padding: 0; 
+    gap: 15px; 
+    justify-content: center; /* <--- AHORA CENTRADO */
+  }
   .wish-box {
-    width: 48% !important; height: auto !important; min-height: 190px;
-    padding: 12px; border-radius: 16px;
+    width: 45% !important; /* Un poco menos del 48% para que respiren */
+    height: auto !important; 
+    min-height: 190px;
+    padding: 12px; 
+    border-radius: 16px;
   }
   .btn-steam-card {
     padding: 6px 8px; flex-direction: column; text-align: center; gap: 4px;
@@ -507,9 +534,13 @@ button.btn-secondary:hover { background: var(--nav-hover); }
 
   /* Historial en columna */
   #historial-section .grid { flex-direction: column; align-items: center; }
-  #historial-section .section-box { width: 100%; max-width: 100%; }
-  #historial-section .historial-container { padding: 15px; }
-  .historial-btn { padding: 8px 12px !important; font-size: 0.9rem !important; }
+  
+  #historial-section .section-box { 
+    width: 100%; 
+    max-width: 100%; 
+    flex: 0 0 auto !important;  /* Deja que la altura se ajuste al contenido */
+    height: auto !important;    /* Asegura que no tenga altura fija */
+  }
 }
 
 /* --- MÓVILES PEQUEÑOS (iPhone SE) --- */
