@@ -285,10 +285,6 @@ button.btn-secondary:hover { background: var(--nav-hover); }
 }
 .admin-controls { display: flex; gap: 0.5rem; }
 .btn-icon.btn-delete-sorteo:hover { background: #fee2e2; color: #dc2626; }
-#test-environment-box {
-  border: 2px dashed var(--title-color); background: #fff; padding: 1rem;
-  border-radius: 0.8rem; margin-top: 2rem;
-}
 
 /* LISTAS DE DESEOS */
 .my-wishlist-card {
@@ -404,9 +400,47 @@ button.btn-secondary:hover { background: var(--nav-hover); }
   opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
 }
 #play-pause-btn:hover + #volume-container,
-#volume-container:hover { opacity: 1; pointer-events: auto; }
-#volume-slider { height: 100px; width: 12px; cursor: pointer; }
+#volume-container {
+  position: absolute; 
+  /* Bajamos el contenedor para que toque el botón y no se cierre al pasar el mouse */
+  bottom: 40px; 
+  left: 50%; 
+  transform: translateX(-50%);
+  
+  background-color: white; 
+  /* Añadimos padding abajo para separar visualmente el slider del botón sin romper el hover */
+  padding: 15px 10px 30px 10px; 
+  
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  opacity: 0; 
+  pointer-events: none; 
+  transition: opacity 0.3s ease, bottom 0.3s ease; /* Añadimos transición suave al movimiento */
+  
+  /* Asegura que el contenedor esté ENCIMA del botón en orden de apilamiento pero visualmente detrás si quisieras */
+  z-index: 9999; 
+}
+#volume-slider {
+  /* Propiedad mágica para hacerlo vertical en Chrome/Edge/Safari */
+  -webkit-appearance: slider-vertical; 
+  /* Estándar (Firefox y futuros) */
+  writing-mode: bt-lr; 
+  
+  height: 100px; 
+  width: 8px; /* Un ancho más fino se ve más elegante */
+  cursor: pointer;
+  
+  /* Esto pintará el slider del color verde oscuro de tu tema */
+  accent-color: var(--nav-bg); 
+  background: transparent;
+  margin: 0 auto; /* Centrado */
+  display: block;
+}
 
+.nav-btn-inline {
+  background: #fff; border-radius: 1rem; padding: 10px 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05); z-index: 1; line-height: 1.6;
+}
 
 /* =========================================
    7. RESPONSIVE Y CONTROL DE VISIBILIDAD
@@ -546,4 +580,61 @@ button.btn-secondary:hover { background: var(--nav-hover); }
 /* --- MÓVILES PEQUEÑOS (iPhone SE) --- */
 @media (max-width: 380px) {
   .wish-box { width: 100% !important; } /* 1 sola columna */
+}
+
+/* =========================================
+   BOTÓN STEAM PROMO
+   ========================================= */
+.steam-promo-container {
+  margin-top: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.steam-promo-btn {
+  /* Esto es lo que hace que TODO el cuadro sea clickeable */
+  display: inline-flex; 
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Espacio entre texto e icono */
+  
+  /* Diseño visual */
+  background-color: #ffffff;
+  color: var(--nav-bg); /* Tu verde oscuro */
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 15px 30px; /* Hacemos el botón más grande y cómodo */
+  border-radius: 50px; /* Bordes totalmente redondeados (estilo píldora) */
+  
+  /* Sombras y bordes */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  border: 2px solid transparent; /* Reserva espacio para borde */
+  
+  /* Transiciones suaves */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.steam-promo-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+/* Efecto Hover (Al pasar el mouse) */
+.steam-promo-btn:hover {
+  background-color: #ffffff;
+  color: var(--title-color); /* Cambia a rojo al pasar el mouse */
+  transform: translateY(-3px); /* El botón "flota" hacia arriba */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12); /* La sombra crece */
+}
+
+.steam-promo-btn:hover svg {
+  transform: translate(3px, -3px); /* La flecha se mueve en diagonal */
+}
+
+.steam-promo-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
 }
