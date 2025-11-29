@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     unsubscribeWishlists = query.onSnapshot((rafflesSnapshot) => {
       if (rafflesSnapshot.empty) {
-        titleElement.innerHTML = '🎁 Tus Sorteos 🎁';
+        titleElement.innerHTML = 'Sorteos Activos';
         container.innerHTML = '<p style="color: #888; grid-column: 1 / -1;">No estás en ningún sorteo.</p>';
         return;
       }
@@ -428,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const allParticipants = new Map();
       sorteoData.participants.forEach(p => allParticipants.set(p.userId, p));
-      const realUserIds = Array.from(allParticipants.keys()).filter(id => !id.startsWith('fake_'));
 
       // Función Renderizado
       const renderGrid = (usersMap) => {
@@ -504,7 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <h3>Unirse a Sorteo</h3>
           <div class="form-group"><input type="text" id="sorteo-id" placeholder="ID del Sorteo"></div>
           <button id="join-sorteo-btn" class="btn-secondary">Unirme</button>
-          <div id="test-environment-box"><h4>🧪 Test</h4><button id="add-fakes-btn">Añadir Fakes</button></div>
         </div>
         <div class="sorteo-list-container">
           <h2>Mis Sorteos</h2>
@@ -570,22 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
         input.value = (Math.floor(Math.random() * 8) + 3) * 1000;
         if (++i >= 20) { clearInterval(interval); btn.disabled = false; }
       }, 50);
-    });
-
-    // Fake Users
-    document.getElementById('add-fakes-btn').addEventListener('click', async () => {
-      try {
-        const snap = await db.collection('sorteos').where('adminId', '==', currentUser.uid).get();
-        const open = snap.docs.filter(d => d.data().status === 'abierto');
-        if (open.length === 0) return customAlert("Error", "No tienes sorteos abiertos.");
-        
-        const fakes = ['Goku', 'Vegeta', 'Piccolo', 'Gohan', 'Krillin'].map((n, i) => ({ userId: `fake_00${i}`, name: n }));
-        await open[0].ref.update({
-          participants: firebase.firestore.FieldValue.arrayUnion(...fakes),
-          participantIds: firebase.firestore.FieldValue.arrayUnion(...fakes.map(f => f.userId))
-        });
-        customAlert("Éxito", "Guerreros Z añadidos.");
-      } catch (e) { console.error(e); }
     });
   }
 
