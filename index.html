@@ -8,9 +8,13 @@
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp">
   <link rel="stylesheet" href="css/style.css">
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -66,16 +70,15 @@
         
         <div class="instructions-card">
           <h3>¿Cómo funciona el Amigo Secreto?</h3>
-          <p>La idea de este juego es simple: cada participante le hace un regalo a otro participante, ¡pero nadie sabe quién le regala a quién hasta el final!</p>
+          <p>La idea de este juego es simple: cada participante le hace un regalo a otro participante, pero nadie sabe quién le regala a quién hasta el día de la entrega.</p>
           <ul>
-            <li><strong>Sorteo:</strong> La aplicación asigna a cada persona un "Amigo Secreto" de forma aleatoria y secreta.</li>
-            <li><strong>Agregarse en Steam:</strong> Agregarse en steam antes del día de la entrega es lo ideal para evitar la espera de 3 días que tiene steam para regalarse algo. (Pueden dejar su código en la sección <a href="#" class="nav-btn-inline" data-target="perfil-section">Mi Perfil</a>).</li>
+            <li><strong>Sorteo:</strong> La página asigna a cada persona un "Amigo Secreto" de forma aleatoria y secreta.</li>
+            <li><strong>Agregarse en Steam:</strong> Agregarse en steam antes del día de la entrega es lo ideal para evitar la espera de 3 días que tiene steam para regalarse algo. (Pueden dejar su código en <a href="#" class="nav-btn-inline" data-target="perfil-section">Mi Perfil</a> o se las arreglan como quieran).</li>
             <li><strong>Lista de Deseos:</strong> Revisa la <a href="#" class="nav-btn-inline" data-target="deseos-section">Lista de deseados</a> para darte una idea que darle a tu amigo.</li>
-            <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo; No hace falta regirse por la lista de deseados, puede ser lo que sea a tu cariño y sepas que le va a gustar a tu amigo, si en caso de no conocerlo bien puedes preguntar sin problema a otra persona que lo conozca mejor que le gusta.</li>
-            <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord.</li>
-          </ul>
+            <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo; No hace falta regirse por la lista de deseados, puede ser lo que sea a tu cariño y sepas que le va a gustar a tu amigo secreto.</li>
+            <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord (no pasará).</li>
           <p class="event-date">
-            La entrega de regalos será el: <strong>?? de diciembre de 2025</strong>
+            La entrega de regalos será el: <strong>no se lol</strong>
           </p>
         </div>
 
@@ -107,13 +110,13 @@
              <label style="display:block; margin-bottom:5px; font-weight:600;">Tu Código de Amigo de Steam:</label>
              <input type="text" id="my-steam-friend-code" placeholder="Ej: 12345678">
              <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">
-               Consíguelo <a href="https://steamcommunity.com/my/friends/add" target="_blank" rel="noopener noreferrer" class="nav-btn-inline">aquí</a> o en "Añadir a un amigo" en Steam.
+               Consíguelo <a href="https://steamcommunity.com/my/friends/add" target="_blank" rel="noopener noreferrer" class="btn-link-mini">aquí</a> o en "Añadir a un amigo" en Steam.
              </p>
           </div>
 
           <hr class="card-divider">
 
-          <p>Pega la URL de tu <a href="https://store.steampowered.com/wishlist/" target="_blank" rel="noopener noreferrer" class="nav-btn-inline">Lista de Deseados</a>:</p>
+          <p>Pega la URL de tu <a href="https://store.steampowered.com/wishlist/" target="_blank" rel="noopener noreferrer" class="btn-link-mini">Lista de Deseados</a>:</p>
           <div class="form-group">
             <input type="text" id="my-wishlist-url" placeholder="https://store.steampowered.com/wishlist/id/tu_usuario/">
           </div>
