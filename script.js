@@ -708,15 +708,21 @@ function loadHistorialSection() {
     const sorteoSec = document.getElementById('sorteo-section');
     if (!sorteoSec) return;
 
+    // AÑADIDO: Contenedor flex para los botones (Crear y Unirse)
     sorteoSec.innerHTML = `
       <div class="section-header">
         <h2>Sorteos</h2>
-        <button id="btn-new-sorteo" class="btn-primary">+ Nuevo Sorteo</button>
+        <div style="display:flex; flex-direction:column; gap:10px; align-items:center; width:100%;">
+          <button id="btn-new-sorteo" class="btn-primary">+ Nuevo Sorteo</button>
+          <button id="btn-join-sorteo" class="btn-secondary">🔗 Unirse con Código</button>
+        </div>
       </div>
       <div id="sorteos-list"></div>
     `;
 
     document.getElementById('btn-new-sorteo').addEventListener('click', handleNewSorteo);
+    // AÑADIDO: Listener para el nuevo botón
+    document.getElementById('btn-join-sorteo').addEventListener('click', handleJoinSorteo);
     
     sorteoSec.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-id]');
@@ -730,10 +736,174 @@ function loadHistorialSection() {
       else if (btn.classList.contains('btn-reset-sorteo')) await handleResetSorteo(id);
       else if (btn.classList.contains('btn-delete-sorteo')) await handleDeleteSorteo(id, btn.dataset.name);
       else if (btn.classList.contains('btn-ver-resultado')) await handleVerResultado(id);
-      else if (btn.classList.contains('btn-view-all')) await handleViewAllResults(id);
+      else if (btn.classList.contains('btn-view-all')) await handleViewAllResults(id); // Si tienes esta función definida
     });
 
     displayMySorteos();
+  }
+
+  async function handleJoinSorteo() {
+    try {
+      // 1. Pedir el código
+      const code = await customPrompt("Unirse a un Sorteo", "Ingresa el ID del sorteo:", "");
+      if (!code) return;
+      
+      const cleanId = code.trim();
+      showLoadingModal("Verificando...", "Buscando coincidencias seguras...");
+
+      const docRef = db.collection('sorteos').doc(cleanId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return customAlert("Error", "No existe ningún sorteo con ese ID.");
+      }
+
+      const data = doc.data();
+      
+      // A. Si ya está dentro, avisar
+      if (data.participantIds.includes(currentUser.uid)) {
+        return customAlert("¡Ya estás dentro!", "Ya formas parte de este sorteo. Búscalo en tu lista de Inicio o Sorteos.");
+      }
+
+      // B. SEGURIDAD: Buscar si existe un participante manual con MI MISMO EMAIL
+      // currentUser.email viene de Firebase Auth
+      const myEmail = currentUser.email.toLowerCase();
+      
+      const manualMatch = data.participants.find(p => 
+        !p.hasAccount && // Que sea manual
+        p.email &&       // Que tenga email
+        p.email.toLowerCase() === myEmail // Que coincida con el mío
+      );
+
+      // C. Lógica de decisión
+      if (manualMatch) {
+        // --- CASO 1: ENCONTRAMOS COINCIDENCIA DE EMAIL (Anti-Pillo) ---
+        const confirm = await customConfirm(
+          "Perfil Encontrado", 
+          `Hemos encontrado al participante manual <strong>"${manualMatch.name}"</strong> con tu correo (${myEmail}).<br><br>¿Deseas vincular este perfil a tu cuenta para ver tu amigo secreto?`,
+          "Sí, soy yo"
+        ).catch(() => false);
+
+        if (confirm) {
+          showLoadingModal("Vinculando...", "Transfiriendo tu amigo secreto...");
+          await claimManualProfile(cleanId, data, manualMatch);
+          customAlert("¡Vinculado!", "Tu perfil ha sido actualizado. Ahora puedes ver tu amigo secreto en la sección de Inicio.");
+        }
+        
+      } else {
+        // --- CASO 2: NO HAY COINCIDENCIA ---
+        // Si el sorteo YA se realizó, no podemos dejar entrar a gente nueva "porque sí".
+        if (data.status === 'realizado') {
+          return customAlert(
+            "Acceso Denegado", 
+            `Este sorteo ya fue realizado. <br><br>
+             <strong>¿Eres un participante manual?</strong><br>
+             Tu correo de registro (${myEmail}) no coincide con ningún participante manual de este sorteo.<br><br>
+             <strong>Solución:</strong> Pide al administrador que edite tu participante manual y ponga tu correo exacto.`
+          );
+        }
+
+        // Si el sorteo está ABIERTO, sí dejamos entrar como nuevo participante
+        const confirmNew = await customConfirm(
+          "Unirse como Nuevo",
+          "No encontramos un perfil manual vinculado a tu correo. ¿Quieres unirte como un participante NUEVO?",
+          "Unirme"
+        ).catch(() => false);
+
+        if (confirmNew) {
+          const newParticipant = {
+            userId: currentUser.uid,
+            name: currentUserName,
+            hasAccount: true,
+            email: currentUser.email
+          };
+
+          await docRef.update({
+            participantIds: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+            participants: firebase.firestore.FieldValue.arrayUnion(newParticipant)
+          });
+          customAlert("¡Listo!", "Te has unido al sorteo exitosamente.");
+        }
+      }
+
+    } catch (error) {
+      if (error !== 'cancelled') {
+        console.error(error);
+        customAlert("Error", "Ocurrió un problema al intentar unirse.");
+      }
+    }
+  }
+
+  // Función para convertir un perfil manual en uno real (Migración)
+  async function claimManualProfile(sorteoId, sorteoData, manualParticipant) {
+    const oldId = manualParticipant.userId;
+    const newId = currentUser.uid;
+    const batch = db.batch();
+    const sorteoRef = db.collection('sorteos').doc(sorteoId);
+
+    // 1. Actualizar array de participantes
+    // Quitamos el viejo y ponemos el nuevo (con los mismos datos pero hasAccount: true y nuevo ID)
+    const updatedParticipants = sorteoData.participants.map(p => {
+      if (p.userId === oldId) {
+        return {
+          ...p,
+          userId: newId,
+          hasAccount: true,
+          // Actualizamos el nombre al de la cuenta real por consistencia, o dejamos el que tenía
+          name: currentUserName 
+        };
+      }
+      return p;
+    });
+
+    // 2. Actualizar participantIds
+    const updatedIds = sorteoData.participantIds.filter(id => id !== oldId);
+    updatedIds.push(newId);
+
+    batch.update(sorteoRef, {
+      participants: updatedParticipants,
+      participantIds: updatedIds
+    });
+
+    // 3. MIGRAR ASIGNACIONES (Si el sorteo ya se hizo)
+    if (sorteoData.status === 'realizado') {
+      const assignmentsRef = sorteoRef.collection('assignments');
+
+      // A. Buscar el documento donde YO regalo (Giver)
+      // El ID del documento es el ID del usuario (manual en este caso)
+      const giverDocRef = assignmentsRef.doc(oldId);
+      const giverDocSnapshot = await giverDocRef.get();
+
+      if (giverDocSnapshot.exists) {
+        const assignmentData = giverDocSnapshot.data();
+        
+        // Crear nuevo documento con mi ID real
+        const newGiverDocRef = assignmentsRef.doc(newId);
+        batch.set(newGiverDocRef, {
+          ...assignmentData,
+          giverId: newId,
+          giverName: currentUserName
+        });
+
+        // Borrar el documento viejo (manual)
+        batch.delete(giverDocRef);
+      }
+
+      // B. Buscar el documento donde A MÍ me regalan (Receiver)
+      // Aquí tenemos que buscar en toda la colección quién me tiene asignado
+      const receiverQuery = await assignmentsRef.where('receiverId', '==', oldId).get();
+      
+      receiverQuery.forEach(doc => {
+        // Actualizamos ese documento para que apunte a mi nuevo ID
+        batch.update(doc.ref, {
+          receiverId: newId,
+          receiverName: currentUserName
+        });
+      });
+    }
+
+    // Ejecutar todo junto
+    await batch.commit();
   }
 
   async function handleNewSorteo() {
