@@ -8,12 +8,10 @@
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp">
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   
-  <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
@@ -27,6 +25,11 @@
         <input type="email" id="login-email" placeholder="Correo" autocomplete="email" required>
         <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" required>
         <button id="login-btn">Entrar</button>
+        
+        <button id="guest-login-btn" class="btn-secondary" style="margin-top: 10px; background: transparent; border: 2px solid var(--nav-bg); color: var(--nav-bg); box-shadow:none;">
+            Entrar como Invitado
+        </button>
+
         <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
       </div>
 
@@ -48,7 +51,7 @@
         <li><a href="#" class="nav-btn active" data-target="inicio-section">Inicio</a></li>
         <li><a href="#" class="nav-btn" data-target="sorteo-section">Sorteo</a></li>
         <li><a href="#" class="nav-btn" data-target="deseos-section">Listas</a></li>
-        <li><a href="#" class="nav-btn" data-target="historial-section">2024</a></li>
+        <li><a href="#" class="nav-btn" data-target="historial-section">Amigos Secretos</a></li>
         <li><a href="#" class="nav-btn" data-target="perfil-section">Perfil</a></li>
         
         <li class="nav-user-group">
@@ -66,6 +69,18 @@
     <div id="content-container">
       
       <section id="inicio-section" class="content-section">
+        
+        <div class="guest-welcome-msg">
+          <h2 style="color:var(--nav-bg); margin-bottom:10px; text-align: center;">👋 ¡Hola, Visitante!</h2>
+          <p style="color:var(--text-secondary); text-align: center;">
+            Estás explorando en modo invitado.<br>
+            Puedes ver el <strong>Historial de años anteriores</strong> en la pestaña "Amigos Secretos".
+          </p>
+          <div style="background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; text-align: center;">
+            <strong>Nota:</strong> Para participar en sorteos, ver tu amigo secreto o crear tu lista de deseos, necesitas iniciar sesión con tu cuenta.
+          </div>
+        </div>
+
         <div id="secret-friend-container"></div>
         
         <div class="instructions-card">
@@ -77,6 +92,7 @@
             <li><strong>Lista de Deseos:</strong> Revisa la <a href="#" class="nav-btn-inline" data-target="deseos-section">Lista de deseados</a> para darte una idea que darle a tu amigo.</li>
             <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo; No hace falta regirse por la lista de deseados, puede ser lo que sea a tu cariño y sepas que le va a gustar a tu amigo secreto.</li>
             <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord (no pasará).</li>
+          </ul>
           <p class="event-date">
             La entrega de regalos será el: <strong>26 de Diciembre</strong>
           </p>
@@ -91,10 +107,10 @@
       </section>
       
       <section id="sorteo-section" class="content-section hidden">
-        </section>
+      </section>
       
       <section id="historial-section" class="content-section hidden">
-        <div id="historial-btn-container" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
+        <div id="historial-btn-container"></div>
         <div id="historial-contenido" class="historial-container" style="display: none;"></div>
       </section>
 
@@ -159,7 +175,7 @@
         <li>
           <a href="#" class="nav-btn" data-target="historial-section">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span class="nav-text">2024</span>
+            <span class="nav-text">Amigos Secretos</span>
           </a>
         </li>
         <li>
@@ -177,7 +193,7 @@
   
   <div id="audio-controls" aria-label="Controles de audio">
     <button id="play-pause-btn" aria-label="Reproducir música"><svg viewBox="0 0 24 24"><path d="M6 4 L20 12 L6 20 Z" /></svg></button>
-    <div id="volume-container"><input type="range" id="volume-slider" min="0" max="100" value="2" aria-label="Control de volumen" /></div>
+    <div id="volume-container"><input type="range" id="volume-slider" min="0" max="100" value="2" aria-label="Control de volumen" style="writing-mode: vertical-lr; direction: rtl;" /></div>
   </div>
   <audio id="audio-player" src="https://fortnite.gg/img/items/3340/audio.mp3?1" loop></audio>
   
