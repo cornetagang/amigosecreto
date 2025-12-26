@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Estado Global ---
   let currentUser = null;
-  let currentUserName = ''; 
+  let currentUserName = '';
+  let isGuestMode = false;
   
   // --- Listeners (Unsubscribes) ---
   let unsubscribeSorteos = null;
@@ -138,11 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
   // 2.5 SISTEMA DE ENVÍO DE EMAILS CON EMAILJS (MEJORADO)
   // ==========================================
-  
-  /**
-   * Envía un email usando EmailJS con manejo de errores detallado
-   */
-  async function sendSecretFriendEmail(toEmail, toName, secretFriendName, sorteoName, budget) {
+async function sendSecretFriendEmail(toEmail, toName, secretFriendName, sorteoName, budget) {
     if (!toEmail || !toEmail.includes('@') || toEmail.length < 5) {
       console.warn(`⚠️ Email inválido detectado para ${toName}: ${toEmail}`);
       throw new Error(`Dirección de correo inválida: ${toEmail}`);
@@ -179,10 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-    /**
-   * Envía correos a TODOS (Registrados y Manuales)
-   */
-  async function sendEmailsToAllParticipants(sorteoId, sorteoData) {
+async function sendEmailsToAllParticipants(sorteoId, sorteoData) {
     try {
       const assignmentsSnap = await db.collection('sorteos')
         .doc(sorteoId)
@@ -274,12 +268,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
-    if (!name || !email || !password) return customAlert("Error", "Completa todos los campos.");
+    
+    if (!name || !email || !password) return customAlert("Faltan datos", "Por favor completa todos los campos.");
+
     try {
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await db.collection('users').doc(cred.user.uid).set({ name, email, wishlistURL: "" });
+      // El onAuthStateChanged se encargará de cerrar el modal
     } catch (error) {
-      customAlert("Error al registrar", error.message); 
+      // AQUÍ USAMOS EL TRADUCTOR
+      appModal.overlay.classList.add('hidden'); // Ocultar loading si hubo error
+      customAlert("No se pudo registrar", getFriendlyErrorMessage(error)); 
+    }
+  });
+
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) return customAlert("Faltan datos", "Ingresa tu correo y contraseña.");
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      // El onAuthStateChanged se encargará del resto
+    } catch (error) {
+      // AQUÍ USAMOS EL TRADUCTOR
+      appModal.overlay.classList.add('hidden'); // Ocultar loading si hubo error
+      customAlert("Error de acceso", getFriendlyErrorMessage(error)); 
     }
   });
 
@@ -294,29 +309,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==========================================
+  // FUNCIÓN DE SALIDA (LOGOUT)
+  // ==========================================
+  const handleLogout = (e) => { 
+    e.preventDefault(); 
+    
+    if (isGuestMode) {
+      // Si es invitado, recargamos la página para volver al inicio
+      window.location.reload();
+    } else {
+      // Si es usuario real, cerramos sesión en Firebase
+      auth.signOut(); 
+    }
+  };
+
   const btnLogoutMobile = document.getElementById('logout-btn');
-  if(btnLogoutMobile) btnLogoutMobile.addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
+  if(btnLogoutMobile) btnLogoutMobile.addEventListener('click', handleLogout);
 
   const btnLogoutPC = document.getElementById('logout-btn-pc');
-  if(btnLogoutPC) btnLogoutPC.addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
-
+  if(btnLogoutPC) btnLogoutPC.addEventListener('click', handleLogout);
 
   // --- MONITOR DE ESTADO (Auth State Observer) ---
   auth.onAuthStateChanged(async (user) => {
     if (user) {
+      // 1. SI HAY USUARIO (LOGIN REAL):
+      // Aseguramos desactivar el modo invitado y limpiar estilos
+      isGuestMode = false;
+      document.body.classList.remove('guest-mode');
+
       currentUser = user;
       
+      // Cancelar listener anterior si existía
       if (unsubscribeUserDoc) unsubscribeUserDoc();
+
+      // Escuchar cambios en el documento del usuario (Nombre, Wishlist, SteamCode)
       unsubscribeUserDoc = db.collection('users').doc(user.uid)
         .onSnapshot(doc => {
           if (doc.exists) {
             const userData = doc.data();
             currentUserName = userData.name || 'Usuario';
+            
+            // Actualizar nombre en la barra de navegación (PC y Móvil)
             const usernamePC = document.getElementById('nav-username-pc');
             const usernameMobile = document.getElementById('nav-username');
             if (usernamePC) usernamePC.textContent = currentUserName;
             if (usernameMobile) usernameMobile.textContent = currentUserName;
 
+            // Rellenar campos de perfil si existen
             const wishUrlInput = document.getElementById('my-wishlist-url');
             if (wishUrlInput && userData.wishlistURL) wishUrlInput.value = userData.wishlistURL;
 
@@ -325,21 +365,67 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
+      // Ocultar modal de login y mostrar la app
       authModal.style.display = 'none';
       appWrapper.style.display = 'block';
+      
+      // Iniciar la lógica de la aplicación
       initApp();
+
     } else {
-      currentUser = null;
-      currentUserName = '';
-      if (unsubscribeUserDoc) { unsubscribeUserDoc(); unsubscribeUserDoc = null; }
-      if (unsubscribeSorteos) { unsubscribeSorteos(); unsubscribeSorteos = null; }
-      if (unsubscribeWishlists) { unsubscribeWishlists(); unsubscribeWishlists = null; }
-      if (unsubscribeInicio) { unsubscribeInicio(); unsubscribeInicio = null; }
-      if (unsubscribeUsers) { unsubscribeUsers(); unsubscribeUsers = null; }
-      authModal.style.display = 'flex';
-      appWrapper.style.display = 'none';
+      // 2. SI NO HAY USUARIO (LOGOUT O CARGA INICIAL):
+      
+      // 🛑 IMPORTANTE: Si estamos en Modo Invitado, NO bloqueamos la app.
+      // Solo reseteamos la vista si NO es invitado.
+      if (!isGuestMode) {
+        currentUser = null;
+        currentUserName = '';
+        document.body.classList.remove('guest-mode');
+
+        // Limpiar todos los listeners de Firebase para evitar errores
+        if (unsubscribeUserDoc) { unsubscribeUserDoc(); unsubscribeUserDoc = null; }
+        if (unsubscribeSorteos) { unsubscribeSorteos(); unsubscribeSorteos = null; }
+        if (unsubscribeWishlists) { unsubscribeWishlists(); unsubscribeWishlists = null; }
+        if (unsubscribeInicio) { unsubscribeInicio(); unsubscribeInicio = null; }
+        if (unsubscribeUsers) { unsubscribeUsers(); unsubscribeUsers = null; }
+
+        // Mostrar modal de login y ocultar la app
+        authModal.style.display = 'flex';
+        appWrapper.style.display = 'none';
+      }
     }
   });
+
+  // ==========================================
+  // LÓGICA MODO INVITADO (NUEVO)
+  // ==========================================
+  const btnGuest = document.getElementById('guest-login-btn');
+  if (btnGuest) {
+    btnGuest.addEventListener('click', (e) => {
+      e.preventDefault();
+      isGuestMode = true;
+
+      // 1. Configurar usuario "falso" para evitar errores
+      currentUser = { uid: 'guest-user', email: 'invitado@visita.com' };
+      currentUserName = 'Visitante';
+
+      // 2. Actualizar UI
+      document.body.classList.add('guest-mode');
+      
+      const usernamePC = document.getElementById('nav-username-pc');
+      const usernameMobile = document.getElementById('nav-username');
+      if (usernamePC) usernamePC.textContent = "Modo Visita";
+      if (usernameMobile) usernameMobile.textContent = "Modo Visita";
+
+      // 3. Ocultar login y mostrar app
+      authModal.style.display = 'none';
+      appWrapper.style.display = 'block';
+
+      // 4. Iniciar app y forzar navegación a Historial
+      initApp();
+      
+    });
+  }
 
 // ==========================================
   // 4. NAVEGACIÓN INTERNA (CORREGIDA)
@@ -378,6 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadInicioSection() {
     const container = document.getElementById('secret-friend-container');
     if (!container) return;
+
+    // --- GUARDIA: Si es invitado, no buscamos datos en Firebase ---
+    if (isGuestMode) return; 
+
     if (unsubscribeInicio) unsubscribeInicio();
     
     unsubscribeInicio = db.collection('sorteos')
@@ -400,38 +490,38 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             }
             const assignment = assignmentDoc.data();
-container.innerHTML = `
-  <div class="secret-friend-card horizontal-card">
-    <div class="card-section section-left">
-      <div class="gift-icon">🎁</div>
-      <div class="title-group">
-        <h2>Tu Amigo<br>Secreto</h2>
-      </div>
-    </div>
+            container.innerHTML = `
+              <div class="secret-friend-card horizontal-card">
+                <div class="card-section section-left">
+                  <div class="gift-icon">🎁</div>
+                  <div class="title-group">
+                    <h2>Tu Amigo<br>Secreto</h2>
+                  </div>
+                </div>
 
-    <div class="card-section section-center">
-      <div class="info-block">
-        <span class="label">Sorteo</span>
-        <span class="value">${sorteoData.sorteoName}</span>
-      </div>
-      <div class="vertical-divider"></div>
-      <div class="info-block">
-        <span class="label">Presupuesto</span>
-        <span class="value budget">$${sorteoData.budget}</span>
-      </div>
-    </div>
+                <div class="card-section section-center">
+                  <div class="info-block">
+                    <span class="label">Sorteo</span>
+                    <span class="value">${sorteoData.sorteoName}</span>
+                  </div>
+                  <div class="vertical-divider"></div>
+                  <div class="info-block">
+                    <span class="label">Presupuesto</span>
+                    <span class="value budget">$${sorteoData.budget}</span>
+                  </div>
+                </div>
 
-    <div class="card-section section-right">
-      <div class="reveal-text">
-        <span class="label">LE REGALAS A:</span>
-        <span class="secret-name">............</span>
-      </div>
-      <button class="btn-reveal-secret" data-name="${assignment.receiverName}">
-        ${iconView}
-      </button>
-    </div>
-  </div>
-`;
+                <div class="card-section section-right">
+                  <div class="reveal-text">
+                    <span class="label">LE REGALAS A:</span>
+                    <span class="secret-name">............</span>
+                  </div>
+                  <button class="btn-reveal-secret" data-name="${assignment.receiverName}">
+                    ${iconView}
+                  </button>
+                </div>
+              </div>
+            `;
           });
       });
   }
@@ -440,6 +530,9 @@ container.innerHTML = `
   // SECCIÓN LISTAS DE DESEOS (Con Bloqueo < 3)
   // ==========================================
   function loadDeseosSection() {
+    // --- GUARDIA: Si es invitado, salimos ---
+    if (isGuestMode) return;
+
     const container = document.getElementById('wishlist-container-dynamic');
     const title = document.getElementById('wishlist-sorteo-title');
     
@@ -553,50 +646,184 @@ container.innerHTML = `
   }
 
 // ==========================================
-// SECCIÓN HISTORIAL 2024 (Diseño Álbum)
+// SECCIÓN HISTORIAL (HORIZONTAL + SIN CUADRO BLANCO)
 // ==========================================
 function loadHistorialSection() {
   const btnContainer = document.getElementById('historial-btn-container');
   const contenidoDiv = document.getElementById('historial-contenido');
   
+  // Tu API (Asegúrate que sea la URL correcta /exec)
   const MY_API_URL = "https://script.google.com/macros/s/AKfycbzeEirq01wkJHpXJmq-8nR97m-vvalVoyB2rclZE44DJIJbrJLzTRzMA2j1mEopqnC7rg/exec"; 
-  
+
   if (!btnContainer || !contenidoDiv) return;
 
-  btnContainer.innerHTML = ''; 
-  contenidoDiv.style.display = 'block';
+  // 1. AL ENTRAR: Aseguramos que el cuadro blanco esté OCULTO
+  if (btnContainer.innerHTML === '') {
+     contenidoDiv.style.display = 'none'; // <--- Oculto
+     initHistory();
+  }
 
-  (async function renderHistory() {
-    contenidoDiv.innerHTML = `
-      <div style="text-align:center; padding:3rem;">
-        <div style="font-size:3rem; margin-bottom:1rem; animation:bounce 1s infinite;">🎁</div>
-        <p>Cargando...</p>
-      </div>`;
-
+  async function initHistory() {
+    btnContainer.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 1rem 2rem; background: rgba(255,255,255,0.9); border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div style="width: 20px; height: 20px; border: 3px solid rgba(45, 90, 61, 0.2); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <span style="font-size: 1rem; color: var(--nav-bg); font-weight: 600;">Cargando años disponibles...</span>
+      </div>
+      <style>
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    
     try {
-      const response = await fetch(MY_API_URL);
-      if (!response.ok) throw new Error(`Error API: ${response.status}`);
+      const response = await fetch(`${MY_API_URL}?mode=getYears`);
+      const result = await response.json();
       
-      const rawData = await response.json(); 
+      btnContainer.innerHTML = ''; 
       
-      let data = [];
-      if (Array.isArray(rawData)) {
-          data = rawData;
-      } else if (rawData.data && Array.isArray(rawData.data)) {
-          data = rawData.data;
-      } else {
-          const possibleArray = Object.values(rawData).find(val => Array.isArray(val));
-          data = possibleArray || [];
+      // CRÍTICO: Aplicar estilos del contenedor AQUÍ, después de limpiar innerHTML
+      btnContainer.style.setProperty('display', 'flex', 'important');
+      btnContainer.style.setProperty('flex-direction', 'row', 'important');
+      btnContainer.style.setProperty('justify-content', 'center', 'important');
+      btnContainer.style.setProperty('align-items', 'center', 'important');
+      btnContainer.style.setProperty('flex-wrap', 'wrap', 'important');
+      btnContainer.style.setProperty('gap', '20px', 'important');
+      btnContainer.style.setProperty('width', '100%', 'important');
+      btnContainer.style.setProperty('padding', '10px', 'important');
+
+      if (!result.years || result.years.length === 0) {
+        btnContainer.innerHTML = '<p style="color:#fff;">No hay historial disponible.</p>';
+        return;
       }
 
+      // Renderizar botones (ordenados de menor a mayor)
+      renderYearButtons(result.years);
+
+      // 2. MOSTRAR cuadro placeholder inicial
+      contenidoDiv.style.display = 'block';
+      contenidoDiv.innerHTML = `
+        <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; opacity: 0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial de ese año</p>
+        </div>
+      `;
+
+    } catch (error) {
+      console.error("Error:", error);
+      btnContainer.innerHTML = '';
+    }
+  }
+
+function renderYearButtons(years) {
+    // NO limpiar innerHTML aquí porque borra los estilos del contenedor
+    // El innerHTML ya se limpió en initHistory()
+    
+    // Ordenar años de menor a mayor (2024, 2025, 2026...)
+    const sortedYears = years.sort((a, b) => a - b);
+    
+    sortedYears.forEach(year => {
+      const btn = document.createElement('button');
+      btn.textContent = year;
+      btn.className = 'btn-historial-year'; 
+      
+      // Aplicar estilos críticos con !important
+      btn.style.setProperty('width', 'auto', 'important');
+      btn.style.setProperty('min-width', '140px', 'important');
+      btn.style.setProperty('display', 'inline-flex', 'important');
+      btn.style.setProperty('justify-content', 'center', 'important');
+      btn.style.setProperty('align-items', 'center', 'important');
+      btn.style.setProperty('flex', '0 0 auto', 'important');
+      
+      btn.onclick = () => loadYearData(year);
+      btnContainer.appendChild(btn);
+    });
+  }
+
+  // Variable para rastrear el año actualmente seleccionado
+  let currentSelectedYear = null;
+
+  async function loadYearData(year) {
+    // Verificar si se hace clic en el mismo año que ya está seleccionado
+    if (currentSelectedYear === year) {
+      // Deseleccionar: volver al estado inicial
+      currentSelectedYear = null;
+      
+      // Restaurar todos los botones a su estado normal
+      const allBtns = btnContainer.querySelectorAll('button');
+      allBtns.forEach(b => {
+        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
+        b.style.color = 'var(--nav-bg)';
+        b.style.transform = 'scale(1)';
+        b.style.boxShadow = 'none';
+      });
+      
+      // Mostrar el mensaje inicial de nuevo
+      contenidoDiv.style.display = 'block';
+      contenidoDiv.innerHTML = `
+        <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; opacity: 0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial de ese año</p>
+        </div>
+      `;
+      return; // Salir de la función
+    }
+    
+    // Si llegamos aquí, es un año diferente, así que lo seleccionamos
+    currentSelectedYear = year;
+    
+    // 3. AL HACER CLIC: Ahora sí mostramos el cuadro blanco
+    contenidoDiv.style.display = 'block'; 
+    
+    // Resaltar botón activo
+    const allBtns = btnContainer.querySelectorAll('button');
+    allBtns.forEach(b => {
+      if (b.textContent == year) {
+        b.style.background = 'var(--nav-bg)';
+        b.style.color = 'white';
+        b.style.transform = 'scale(1.05)';
+        b.style.boxShadow = '0 4px 12px rgba(45, 90, 61, 0.4)';
+      } else {
+        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
+        b.style.color = 'var(--nav-bg)';
+        b.style.transform = 'scale(1)';
+        b.style.boxShadow = 'none';
+      }
+    });
+
+    // Loading con el mismo estilo que el placeholder
+    contenidoDiv.innerHTML = `
+      <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="width: 50px; height: 50px; margin: 0 auto 1.5rem; border: 4px solid rgba(45, 90, 61, 0.1); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">⏳ Cargando Amigo Secreto ${year}</h3>
+        <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Obteniendo los datos del año seleccionado...</p>
+      </div>
+      <style>
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+
+    try {
+      const response = await fetch(`${MY_API_URL}?year=${year}`);
+      const rawData = await response.json();
+      let data = rawData.data || rawData; 
+      
       if (!Array.isArray(data) || data.length === 0) {
-        contenidoDiv.innerHTML = '<div class="history-section-container"><p style="text-align:center; color:white;">No se encontraron registros del 2024.</p></div>';
+        contenidoDiv.innerHTML = `<p style="text-align:center; padding: 2rem;">El álbum del ${year} está vacío.</p>`;
         return;
       }
 
       const cardsHtml = data.map(row => {
-        const giver = row.Giver || row.giver || "Anónimo";
-        const receiver = row.Receiver || row.receiver || "Alguien";
+        const giver = row.Giver || row.giver || "???";
+        const receiver = row.Receiver || row.receiver || "???";
         const giftUrl = row.GiftURL || row.giftURL || "#";
         const imgUrl = row.ImageURL || row.imageURL;
 
@@ -604,28 +831,30 @@ function loadHistorialSection() {
           ? imgUrl 
           : 'https://via.placeholder.com/400x250?text=Sin+Imagen';
 
+        const isSpoiler = giver === "???" || receiver === "???";
+        const clickAction = (isSpoiler || giftUrl === '#' || giftUrl.length < 5) 
+          ? '' 
+          : `<a href="${giftUrl}" target="_blank" class="card-link-overlay" title="Ver regalo original"></a>`;
+
         return `
-          <div class="history-card">
+          <div class="history-card" style="animation: fadeInUp 0.5s ease;">
             <div class="history-header">
               <div class="name-badge">${giver}</div>
               <div class="arrow-badge">➔</div>
               <div class="name-badge">${receiver}</div>
             </div>
-
             <div class="history-image-wrapper">
-              <img src="${finalImg}" alt="Regalo de ${giver}" loading="lazy">
-              
-              ${giftUrl !== '#' && giftUrl.length > 5 
-                ? `<a href="${giftUrl}" target="_blank" class="card-link-overlay" title="Ver regalo original"></a>` 
-                : ''}
+              <img src="${finalImg}" alt="Regalo" loading="lazy">
+              ${clickAction}
             </div>
           </div>
         `;
       }).join('');
 
+      // Renderizar grilla
       contenidoDiv.innerHTML = `
-        <div class="history-section-container" style="animation: fadeInUp 0.5s ease;">
-          <div class="history-year-title">2024</div>
+        <div class="history-section-container">
+          <div class="history-year-title">🎄 Amigo Secreto ${year} 🎄</div>
           <div class="history-grid">
             ${cardsHtml}
           </div>
@@ -633,14 +862,10 @@ function loadHistorialSection() {
       `;
 
     } catch (error) {
-      console.error("❌ Error al cargar historial:", error);
-      contenidoDiv.innerHTML = `
-        <div class="history-section-container" style="text-align:center; color:#ffcccb; padding:2rem;">
-          <p>Ups, no pudimos cargar el álbum.</p>
-          <p style="font-size:0.8rem;">Detalle: ${error.message}</p>
-        </div>`;
+      console.error(`Error cargando ${year}:`, error);
+      contenidoDiv.innerHTML = `<p style="text-align:center; color:red; padding: 2rem;">Error al cargar datos.</p>`;
     }
-  })();
+  }
 }
 
   const savePerfil = document.getElementById('save-profile-btn');
@@ -703,12 +928,14 @@ function loadHistorialSection() {
   // Exponerla al HTML para que funcione el onclick
   window.handleEditParticipant = handleEditParticipant;
 
-
   function loadSorteoSection() {
+    // --- GUARDIA: Si es invitado, salimos ---
+    if (isGuestMode) return;
+
     const sorteoSec = document.getElementById('sorteo-section');
     if (!sorteoSec) return;
 
-    // AÑADIDO: Contenedor flex para los botones (Crear y Unirse)
+    // Contenedor flex para los botones (Crear y Unirse)
     sorteoSec.innerHTML = `
       <div class="section-header">
         <h2>Sorteos</h2>
@@ -721,7 +948,6 @@ function loadHistorialSection() {
     `;
 
     document.getElementById('btn-new-sorteo').addEventListener('click', handleNewSorteo);
-    // AÑADIDO: Listener para el nuevo botón
     document.getElementById('btn-join-sorteo').addEventListener('click', handleJoinSorteo);
     
     sorteoSec.addEventListener('click', async (e) => {
@@ -736,7 +962,6 @@ function loadHistorialSection() {
       else if (btn.classList.contains('btn-reset-sorteo')) await handleResetSorteo(id);
       else if (btn.classList.contains('btn-delete-sorteo')) await handleDeleteSorteo(id, btn.dataset.name);
       else if (btn.classList.contains('btn-ver-resultado')) await handleVerResultado(id);
-      else if (btn.classList.contains('btn-view-all')) await handleViewAllResults(id); // Si tienes esta función definida
     });
 
     displayMySorteos();
@@ -1360,3 +1585,39 @@ window.copyToClipboard = function(text, btnElement) {
     }, 2000);
   }).catch(err => alert('Tu código: ' + text));
 };
+
+// ==========================================
+// TRADUCTOR DE ERRORES FIREBASE (NUEVO)
+// ==========================================
+function getFriendlyErrorMessage(error) {
+  console.error("Error original:", error); // Esto queda en la consola por si acaso
+
+  // 1. Detectar el error específico que te salió a ti (JSON feo)
+  const msg = error.message || error.toString();
+  if (msg.includes('INVALID_LOGIN_CREDENTIALS') || msg.includes('INVALID_PASSWORD')) {
+    return "El correo o la contraseña son incorrectos. Inténtalo de nuevo.";
+  }
+
+  // 2. Errores estándar de Firebase (Códigos comunes)
+  const code = error.code || '';
+  
+  switch (code) {
+    case 'auth/user-not-found':
+      return "No existe ninguna cuenta registrada con este correo.";
+    case 'auth/wrong-password':
+      return "La contraseña es incorrecta.";
+    case 'auth/invalid-email':
+      return "El formato del correo no es válido.";
+    case 'auth/email-already-in-use':
+      return "Ya existe una cuenta registrada con este correo.";
+    case 'auth/weak-password':
+      return "La contraseña es muy débil (mínimo 6 caracteres).";
+    case 'auth/too-many-requests':
+      return "Muchos intentos fallidos. Espera unos minutos e intenta de nuevo.";
+    case 'auth/network-request-failed':
+      return "Error de conexión. Verifica tu internet.";
+    default:
+      // Si es otro error raro, mostramos un mensaje genérico pero amable
+      return "Ocurrió un error al intentar acceder. Por favor verifica tus datos.";
+  }
+}
