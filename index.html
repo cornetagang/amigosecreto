@@ -23,7 +23,14 @@
       <div id="login-form">
         <h3>Iniciar Sesión</h3>
         <input type="email" id="login-email" placeholder="Correo" autocomplete="email" required>
-        <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" required>
+        
+        <div class="password-wrapper">
+          <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" required>
+          <button type="button" class="btn-eye" id="toggle-login-pass" tabindex="-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+
         <button id="login-btn">Entrar</button>
         
         <button id="guest-login-btn" class="btn-secondary" style="margin-top: 10px; background: transparent; border: 2px solid var(--nav-bg); color: var(--nav-bg); box-shadow:none;">
@@ -37,7 +44,14 @@
         <h3>Crear Cuenta</h3>
         <input type="text" id="register-name" placeholder="Tu Nombre" autocomplete="name" required>
         <input type="email" id="register-email" placeholder="Correo" autocomplete="email" required>
-        <input type="password" id="register-password" placeholder="Contraseña" autocomplete="new-password" required>
+        
+        <div class="password-wrapper">
+          <input type="password" id="register-password" placeholder="Contraseña" autocomplete="new-password" required>
+          <button type="button" class="btn-eye" id="toggle-register-pass" tabindex="-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+
         <button id="register-btn">Registrarme</button>
         <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
       </div>
@@ -50,8 +64,8 @@
       <ul>
         <li><a href="#" class="nav-btn active" data-target="inicio-section">Inicio</a></li>
         <li><a href="#" class="nav-btn" data-target="sorteo-section">Sorteo</a></li>
-        <li><a href="#" class="nav-btn" data-target="deseos-section">Listas</a></li>
         <li><a href="#" class="nav-btn" data-target="historial-section">Amigos Secretos</a></li>
+        <li><a href="#" class="nav-btn" data-target="deseos-section">Listas</a></li>
         <li><a href="#" class="nav-btn" data-target="perfil-section">Perfil</a></li>
         
         <li class="nav-user-group">
@@ -94,7 +108,7 @@
             <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord (no pasará).</li>
           </ul>
           <p class="event-date">
-            La entrega de regalos será el: <strong>26 de Diciembre</strong>
+            La entrega de regalos será el: <strong>Ya fue</strong>
           </p>
         </div>
 
@@ -167,15 +181,15 @@
           </a>
         </li>
         <li>
-          <a href="#" class="nav-btn" data-target="deseos-section">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
-            <span class="nav-text">Listas</span>
-          </a>
-        </li>
-        <li>
           <a href="#" class="nav-btn" data-target="historial-section">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <span class="nav-text">Amigos Secretos</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-btn" data-target="deseos-section">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+            <span class="nav-text">Listas</span>
           </a>
         </li>
         <li>
