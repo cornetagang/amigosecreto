@@ -836,26 +836,30 @@ function loadInicioSection() {
       return;
     }
 
-    // 4. Renderizado de cartas usando la data de la API
-    const cardsHtml = finalData.map(row => {
-      const giver = row.Giver || row.giver || "???";
-      const receiver = row.Receiver || row.receiver || "???";
-      // Usamos la imagen del script, o una por defecto navideña tuya si no hay
-      const imgUrl = row.ImageURL || row.imageURL || 'https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp';
+   // Localiza este bloque dentro de loadYearData(year) en script.js
+const cardsHtml = finalData.map(row => {
+  const giver = row.Giver || row.giver || "???";
+  const receiver = row.Receiver || row.receiver || "???";
+  const imgUrl = row.ImageURL || row.imageURL || 'https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp';
+  
+  // Extraemos el link del regalo (GiftURL es la columna C de tu Excel)
+  const giftLink = row.GiftURL || row.gifturl || "#";
 
-      return `
-        <div class="history-card">
-          <div class="history-header">
-            <div class="name-badge">${giver}</div>
-            <div class="arrow-badge">➔</div>
-            <div class="name-badge">${receiver}</div>
-          </div>
-          <div class="history-image-wrapper">
-            <img src="${imgUrl}" alt="Foto del Amigo Secreto" loading="lazy" style="object-fit: cover;">
-          </div>
-        </div>
-      `;
-    }).join('');
+  return `
+    <div class="history-card">
+      <a href="${giftLink}" target="_blank" rel="noopener noreferrer" class="card-link-overlay"></a>
+      
+      <div class="history-header">
+        <div class="name-badge">${giver}</div>
+        <div class="arrow-badge">➔</div>
+        <div class="name-badge">${receiver}</div>
+      </div>
+      <div class="history-image-wrapper">
+        <img src="${imgUrl}" alt="Foto del Amigo Secreto" loading="lazy">
+      </div>
+    </div>
+  `;
+}).join('');
 
     contenidoDiv.innerHTML = `
       <div class="history-section-container">
