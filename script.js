@@ -785,151 +785,91 @@ function loadInicioSection() {
 
   // 2. Función para cargar datos de un año específico
   async function loadYearData(year) {
-    const btnContainer = document.getElementById('historial-btn-container');
-    const contenidoDiv = document.getElementById('historial-contenido');
+  const btnContainer = document.getElementById('historial-btn-container');
+  const contenidoDiv = document.getElementById('historial-contenido');
 
-    // --- LÓGICA DE DESELECCIÓN (CORREGIDA) ---
-    if (currentSelectedYear === year) {
-      currentSelectedYear = null;
-      
-      // 1. Resetear estilos de TODOS los botones (sin borrarlos ni recargar)
-      const allBtns = btnContainer.querySelectorAll('button');
-      allBtns.forEach(b => {
-        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
-        b.style.color = 'var(--nav-bg)';
-        b.style.transform = 'scale(1)';
-        b.style.boxShadow = 'none';
-      });
+  // 1. Lógica de Toggle (Deselección)
+  if (currentSelectedYear === year) {
+    currentSelectedYear = null;
+    btnContainer.querySelectorAll('button').forEach(b => {
+      b.style.background = ''; 
+      b.style.color = '';
+      b.style.transform = '';
+    });
+    contenidoDiv.innerHTML = `
+      <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
+        <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial.</p>
+      </div>`;
+    return;
+  }
 
-      // 2. Mostrar el mensaje de "Selecciona un año" (Placeholder)
+  currentSelectedYear = year;
+  
+  // 2. Actualizar estado visual de los botones (Fila horizontal)
+  btnContainer.querySelectorAll('button').forEach(b => {
+    if (parseInt(b.textContent) === year) {
+      b.style.background = 'var(--nav-bg)';
+      b.style.color = 'white';
+      b.style.transform = 'scale(1.05)';
+    } else {
+      b.style.background = ''; 
+      b.style.color = '';
+      b.style.transform = '';
+    }
+  });
+
+  contenidoDiv.innerHTML = `<div style="text-align: center; padding: 1.8rem;"><span style="color: var(--nav-bg); font-weight: 600;">⏳ Cargando Amigo Secreto ${year} </span></div>`;
+
+  try {
+    // 3. CONSULTA EXCLUSIVA A GOOGLE SCRIPT
+    // No usamos Firebase aquí para los datos, solo tu API externa.
+    const response = await fetch(`${MY_API_URL}?year=${year}`);
+    const rawData = await response.json();
+    const finalData = rawData.data || rawData;
+
+    if (!Array.isArray(finalData) || finalData.length === 0) {
       contenidoDiv.innerHTML = `
-        <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; opacity: 0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
-          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial.</p>
+        <div style="text-align:center; padding:2rem;">
+          <p>No se encontraron datos en el Script de Google para el año ${year}.</p>
+        </div>`;
+      return;
+    }
+
+    // 4. Renderizado de cartas usando la data de la API
+    const cardsHtml = finalData.map(row => {
+      const giver = row.Giver || row.giver || "???";
+      const receiver = row.Receiver || row.receiver || "???";
+      // Usamos la imagen del script, o una por defecto navideña tuya si no hay
+      const imgUrl = row.ImageURL || row.imageURL || 'https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp';
+
+      return `
+        <div class="history-card">
+          <div class="history-header">
+            <div class="name-badge">${giver}</div>
+            <div class="arrow-badge">➔</div>
+            <div class="name-badge">${receiver}</div>
+          </div>
+          <div class="history-image-wrapper">
+            <img src="${imgUrl}" alt="Foto del Amigo Secreto" loading="lazy" style="object-fit: cover;">
+          </div>
         </div>
       `;
-      return; // Salimos de la función aquí para no cargar nada más
-    }
-    
-    // --- LÓGICA DE SELECCIÓN (NORMAL) ---
-    currentSelectedYear = year;
-    
-    // Actualizar estilos de botones (Resaltar el activo)
-    const allBtns = btnContainer.querySelectorAll('button');
-    allBtns.forEach(b => {
-      if (b.textContent == year) {
-        b.style.background = 'var(--nav-bg)';
-        b.style.color = 'white';
-        b.style.transform = 'scale(1.05)';
-        b.style.boxShadow = '0 5px 15px rgba(45, 90, 61, 0.3)';
-      } else {
-        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
-        b.style.color = 'var(--nav-bg)';
-        b.style.transform = 'scale(1)';
-        b.style.boxShadow = 'none';
-      }
-    });
+    }).join('');
 
-    // Pantalla de carga (Solo del contenido de abajo)
-    contenidoDiv.style.display = 'block';
     contenidoDiv.innerHTML = `
-      <div style="margin-bottom: 25px; text-align: center; padding: 2rem;">
-        <div style="display: inline-flex; align-items: center; gap: 12px; background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-          <div style="width: 30px; height: 30px; border: 3px solid rgba(45, 90, 61, 0.1); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0;"></div>
-          <span style="color: var(--nav-bg); font-size: 0.95rem; font-weight: 600; white-space: nowrap;">⏳ Cargando Amigo Secreto ${year} ⏳</span>
+      <div class="history-section-container">
+        <div class="history-year-title">🎄 Amigo Secreto ${year} 🎄</div>
+        <div class="history-grid">
+          ${cardsHtml}
         </div>
       </div>
-      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
     `;
 
-    try {
-      let finalData = [];
-
-      // A. Intento Firebase
-      const fbSorteo = firebaseHistoryData.find(s => {
-         const date = s.createdAt ? s.createdAt.toDate() : new Date();
-         return date.getFullYear() == year;
-      });
-
-      if (fbSorteo) {
-        const assignmentsSnap = await db.collection('sorteos').doc(fbSorteo.id).collection('assignments').get();
-        if (!assignmentsSnap.empty) {
-          finalData = assignmentsSnap.docs.map(doc => {
-             const d = doc.data();
-             return {
-               Giver: d.giverName,
-               Receiver: d.receiverName,
-               ImageURL: 'https://cdn-icons-png.flaticon.com/512/6213/6213233.png', 
-               GiftURL: '#'
-             };
-          });
-        }
-      }
-
-      // B. Fallback API
-      if (finalData.length === 0) {
-        const response = await fetch(`${MY_API_URL}?year=${year}`);
-        const rawData = await response.json();
-        finalData = rawData.data || rawData;
-      }
-
-      if (!Array.isArray(finalData) || finalData.length === 0) {
-        contenidoDiv.innerHTML = `
-          <div style="padding: 2rem; text-align:center;">
-              <div style="font-size: 3rem; margin-bottom: 10px;">📭</div>
-              <h3>El álbum del ${year} está vacío</h3>
-              <p>No se encontraron registros.</p>
-          </div>`;
-        return;
-      }
-
-      // Renderizar Cartas
-      const cardsHtml = finalData.map(row => {
-        const giver = row.Giver || row.giver || "???";
-        const receiver = row.Receiver || row.receiver || "???";
-        const giftUrl = row.GiftURL || row.giftURL || "#";
-        const imgUrl = row.ImageURL || row.imageURL;
-        
-        const finalImg = (imgUrl && imgUrl.toString().startsWith('http')) 
-          ? imgUrl 
-          : 'https://cdn-icons-png.flaticon.com/512/6213/6213233.png';
-        
-        const imgStyle = finalImg.includes('flaticon') ? 'object-fit:contain; padding:20px; background:#f9fafb;' : 'object-fit:cover;';
-
-        const clickAction = (giftUrl && giftUrl.length > 5 && giftUrl !== '#') 
-          ? `<a href="${giftUrl}" target="_blank" class="card-link-overlay" title="Ver regalo"></a>` : '';
-
-        return `
-          <div class="history-card">
-            <div class="history-header">
-              <div class="name-badge">${giver}</div>
-              <div class="arrow-badge">➔</div>
-              <div class="name-badge">${receiver}</div>
-            </div>
-            <div class="history-image-wrapper">
-              <img src="${finalImg}" alt="Regalo" loading="lazy" style="${imgStyle}">
-              ${clickAction}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      contenidoDiv.innerHTML = `
-        <div class="history-section-container" style="animation: fadeInUp 0.5s ease;">
-          <div class="history-year-title">🎄 Amigo Secreto ${year} 🎄</div>
-          <div class="history-grid">
-            ${cardsHtml}
-          </div>
-        </div>
-      `;
-
-    } catch (error) {
-      console.error(`Error cargando ${year}:`, error);
-      contenidoDiv.innerHTML = `<p style="color:red; padding:2rem; text-align:center;">Ocurrió un error al cargar los datos.</p>`;
-    }
+  } catch (error) {
+    console.error("Error al consultar Google Script:", error);
+    contenidoDiv.innerHTML = `<p style="color:red; text-align:center; padding:2rem;">Error al conectar con el servidor de Google.</p>`;
+  }
   }
 
   // 3. Renderizar botones
