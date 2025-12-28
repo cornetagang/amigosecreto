@@ -135,6 +135,37 @@ document.addEventListener('DOMContentLoaded', () => {
     appModal.overlay.classList.remove('hidden');
   }
 
+  // ==========================================
+  // TOGGLE PASSWORD (VER/OCULTAR)
+  // ==========================================
+  function setupPasswordToggle(btnId, inputId) {
+    const btn = document.getElementById(btnId);
+    const input = document.getElementById(inputId);
+    
+    if (!btn || !input) return;
+
+    // Iconos SVG
+    const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault(); // Evita submit
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = eyeClosed; // Cambiar a ojo tachado
+        btn.style.color = "var(--nav-bg)"; // Resaltar color
+      } else {
+        input.type = 'password';
+        btn.innerHTML = eyeOpen;   // Cambiar a ojo normal
+        btn.style.color = "#9ca3af"; // Color normal
+      }
+    });
+  }
+
+  // Inicializar para Login y Registro
+  setupPasswordToggle('toggle-login-pass', 'login-password');
+  setupPasswordToggle('toggle-register-pass', 'register-password');
 
 // ==========================================
   // 2.5 SISTEMA DE ENVÍO DE EMAILS CON EMAILJS (MEJORADO)
@@ -461,70 +492,87 @@ async function sendEmailsToAllParticipants(sorteoId, sorteoData) {
     showSection('inicio-section');
   }
 
-  function loadInicioSection() {
-    const container = document.getElementById('secret-friend-container');
-    if (!container) return;
+/* ==========================================
+   FUNCIÓN: CARGAR SECCIÓN INICIO (AMIGO SECRETO)
+   ========================================== */
+function loadInicioSection() {
+  const container = document.getElementById('secret-friend-container');
+  if (!container) return;
 
-    // --- GUARDIA: Si es invitado, no buscamos datos en Firebase ---
-    if (isGuestMode) return; 
+  // Si es modo invitado, no buscamos datos personales
+  if (isGuestMode) return; 
 
-    if (unsubscribeInicio) unsubscribeInicio();
-    
-    unsubscribeInicio = db.collection('sorteos')
-      .where('participantIds', 'array-contains', currentUser.uid)
-      .where('status', '==', 'realizado')
-      .orderBy('createdAt', 'desc')
-      .limit(1)
-      .onSnapshot(snap => {
-        if (snap.empty) {
-          container.innerHTML = '<p style="text-align:center; color:#888;">Aún no tienes sorteos activos.</p>';
-          return;
-        }
-        const sorteoDoc = snap.docs[0];
-        const sorteoData = sorteoDoc.data();
-        
-        db.collection('sorteos').doc(sorteoDoc.id).collection('assignments').doc(currentUser.uid).get()
-          .then(assignmentDoc => {
-            if (!assignmentDoc.exists) {
-              container.innerHTML = '<p>No se encontró tu asignación.</p>';
-              return;
-            }
-            const assignment = assignmentDoc.data();
-            container.innerHTML = `
-              <div class="secret-friend-card horizontal-card">
-                <div class="card-section section-left">
-                  <div class="gift-icon">🎁</div>
-                  <div class="title-group">
-                    <h2>Tu Amigo<br>Secreto</h2>
+  if (unsubscribeInicio) unsubscribeInicio();
+  
+  unsubscribeInicio = db.collection('sorteos')
+    .where('participantIds', 'array-contains', currentUser.uid)
+    .where('status', '==', 'realizado')
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .onSnapshot(snap => {
+      if (snap.empty) {
+        container.innerHTML = '<p style="text-align:center; color:#888;">Aún no tienes sorteos activos.</p>';
+        return;
+      }
+      const sorteoDoc = snap.docs[0];
+      const sorteoData = sorteoDoc.data();
+      
+      db.collection('sorteos').doc(sorteoDoc.id).collection('assignments').doc(currentUser.uid).get()
+        .then(assignmentDoc => {
+          if (!assignmentDoc.exists) {
+            container.innerHTML = '<p>No se encontró tu asignación.</p>';
+            return;
+          }
+          const assignment = assignmentDoc.data();
+          
+          /* --- TARJETA DEFINITIVA --- */
+          container.innerHTML = `
+            <div class="secret-friend-card">
+              
+              <div class="card-header-top" style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2.5rem;">
+                
+                <div class="header-title-group" style="display:flex; align-items:center; gap:15px;">
+                  <div style="background:#fffbeb; padding:10px; border-radius:12px; font-size:1.8rem; line-height:1; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🎁</div>
+                  <div>
+                    <span style="display:block; font-size:0.7rem; color:#9ca3af; font-weight:800; letter-spacing:1px; margin-bottom: 3px; text-transform:uppercase;">Sorteo Actual</span>
+                    <h2 style="margin:0; font-size:1.5rem; color:var(--nav-bg); line-height:1; font-weight:800;">${sorteoData.sorteoName}</h2>
                   </div>
                 </div>
+                
+                <div style="display:flex; align-items:center; gap:20px;">
+                   
+                   <div style="display:flex; flex-direction:column; align-items:center;">
+                      <span style="font-size:0.65rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Presupuesto Mínimo</span>
+                      <div class="header-budget" style="font-size: 1.1rem; padding: 5px 15px; border: 2px solid var(--accent-gold); color: #92400e; border-radius: 50px; font-weight: 700; background: #fffbeb;">
+                        💰 $${sorteoData.budget}
+                      </div>
+                   </div>
 
-                <div class="card-section section-center">
-                  <div class="info-block">
-                    <span class="label">Sorteo</span>
-                    <span class="value">${sorteoData.sorteoName}</span>
-                  </div>
-                  <div class="vertical-divider"></div>
-                  <div class="info-block">
-                    <span class="label">Presupuesto</span>
-                    <span class="value budget">$${sorteoData.budget}</span>
-                  </div>
+                   <div style="width:1px; height:35px; background:#e5e7eb;"></div>
+
+                   <button class="btn-reveal-secret" data-name="${assignment.receiverName}" 
+                      style="width:52px !important; height:52px !important; background:var(--accent-gold) !important; border:none !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); border-radius: 50%; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                      <div style="color: white; display: flex; align-items: center; justify-content: center;">
+                        ${iconView}
+                      </div>
+                   </button>
                 </div>
 
-                <div class="card-section section-right">
-                  <div class="reveal-text">
-                    <span class="label">LE REGALAS A:</span>
-                    <span class="secret-name">............</span>
-                  </div>
-                  <button class="btn-reveal-secret" data-name="${assignment.receiverName}">
-                    ${iconView}
-                  </button>
+              </div>
+
+              <div class="card-body-reveal" style="padding: 3rem 2rem; min-height:180px;">
+                <div class="reveal-label" style="opacity:0.6; margin-bottom: 1rem;">LE REGALAS A:</div>
+                
+                <div class="reveal-content-row" style="width: 100%; justify-content: center;">
+                   <span class="secret-name" style="font-size: clamp(1rem, 5vw, 2.8rem) !important; white-space: nowrap !important; overflow: visible !important;">******</span>
                 </div>
               </div>
-            `;
-          });
-      });
-  }
+
+            </div>
+          `;
+        });
+    });
+}
 
   // ==========================================
   // SECCIÓN LISTAS DE DESEOS (Con Bloqueo < 3)
@@ -646,61 +694,78 @@ async function sendEmailsToAllParticipants(sorteoId, sorteoData) {
   }
 
 // ==========================================
-// SECCIÓN HISTORIAL (HORIZONTAL + SIN CUADRO BLANCO)
-// ==========================================
-function loadHistorialSection() {
-  const btnContainer = document.getElementById('historial-btn-container');
-  const contenidoDiv = document.getElementById('historial-contenido');
+  // SECCIÓN HISTORIAL (LÓGICA GLOBAL Y ACCESIBLE)
+  // ==========================================
   
-  // Tu API (Asegúrate que sea la URL correcta /exec)
+  // Variables globales para el Historial (ahora accesibles por Sorteo y Menu)
+  let firebaseHistoryData = []; 
+  let currentSelectedYear = null;
   const MY_API_URL = "https://script.google.com/macros/s/AKfycbzeEirq01wkJHpXJmq-8nR97m-vvalVoyB2rclZE44DJIJbrJLzTRzMA2j1mEopqnC7rg/exec"; 
 
-  if (!btnContainer || !contenidoDiv) return;
-
-  // 1. AL ENTRAR: Aseguramos que el cuadro blanco esté OCULTO
-  if (btnContainer.innerHTML === '') {
-     contenidoDiv.style.display = 'none'; // <--- Oculto
-     initHistory();
-  }
-
+  // 1. Función principal para inicializar botones de años
   async function initHistory() {
-    btnContainer.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 1rem 2rem; background: rgba(255,255,255,0.9); border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="width: 20px; height: 20px; border: 3px solid rgba(45, 90, 61, 0.2); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-        <span style="font-size: 1rem; color: var(--nav-bg); font-weight: 600;">Cargando años disponibles...</span>
-      </div>
-      <style>
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      </style>
-    `;
+    const btnContainer = document.getElementById('historial-btn-container');
+    const contenidoDiv = document.getElementById('historial-contenido');
     
-    try {
-      const response = await fetch(`${MY_API_URL}?mode=getYears`);
-      const result = await response.json();
-      
-      btnContainer.innerHTML = ''; 
-      
-      // CRÍTICO: Aplicar estilos del contenedor AQUÍ, después de limpiar innerHTML
-      btnContainer.style.setProperty('display', 'flex', 'important');
-      btnContainer.style.setProperty('flex-direction', 'row', 'important');
-      btnContainer.style.setProperty('justify-content', 'center', 'important');
-      btnContainer.style.setProperty('align-items', 'center', 'important');
-      btnContainer.style.setProperty('flex-wrap', 'wrap', 'important');
-      btnContainer.style.setProperty('gap', '20px', 'important');
-      btnContainer.style.setProperty('width', '100%', 'important');
-      btnContainer.style.setProperty('padding', '10px', 'important');
+    if (!btnContainer || !contenidoDiv) return;
 
-      if (!result.years || result.years.length === 0) {
-        btnContainer.innerHTML = '<p style="color:#fff;">No hay historial disponible.</p>';
+    // Spinner de carga inicial
+    btnContainer.innerHTML = `
+      <div style="display:flex; justify-content:center; gap:10px; align-items:center; width:100%; padding:10px;">
+         <div style="width:20px; height:20px; border:3px solid var(--nav-bg); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div>
+         <span style="color:var(--nav-bg); font-weight:600;">Cargando años...</span>
+      </div>`;
+
+    try {
+      // A. Obtener años de la API Antigua
+      const apiPromise = fetch(`${MY_API_URL}?mode=getYears`)
+        .then(res => res.json())
+        .then(data => data.years || [])
+        .catch(() => []);
+
+      let fbYears = [];
+      let apiYears = [];
+      
+      // B. Obtener años de Firebase solo si NO es modo invitado
+      if (!isGuestMode) {
+        const firebasePromise = db.collection('sorteos')
+          .where('participantIds', 'array-contains', currentUser.uid)
+          .where('status', '==', 'finalizado')
+          .orderBy('createdAt', 'desc')
+          .get()
+          .then(snap => {
+            firebaseHistoryData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            return firebaseHistoryData.map(s => {
+              const date = s.createdAt ? s.createdAt.toDate() : new Date();
+              return date.getFullYear(); 
+            });
+          });
+        
+        [apiYears, fbYears] = await Promise.all([apiPromise, firebasePromise]);
+      } else {
+        // En modo invitado, solo usamos la API
+        apiYears = await apiPromise;
+        fbYears = [];
+      }
+      
+      // C. Unir y limpiar duplicados
+      const allYearsRaw = [...apiYears, ...fbYears].map(y => String(y));
+      const uniqueYears = [...new Set(allYearsRaw)];
+      const allYears = uniqueYears.map(y => parseInt(y)).sort((a, b) => a - b);
+
+      // Limpiar contenedor y aplicar estilos
+      btnContainer.innerHTML = ''; 
+      btnContainer.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:center !important; flex-wrap:wrap !important; gap:15px !important; width:100% !important; padding:20px 0 !important;';
+
+      if (allYears.length === 0) {
+        btnContainer.innerHTML = '<p style="color:#888; width:100%; text-align:center;">No hay historial disponible aún.</p>';
+        contenidoDiv.style.display = 'none';
         return;
       }
+      
+      renderYearButtons(allYears); 
 
-      // Renderizar botones (ordenados de menor a mayor)
-      renderYearButtons(result.years);
-
-      // 2. MOSTRAR cuadro placeholder inicial
+      // Mensaje de bienvenida del historial
       contenidoDiv.style.display = 'block';
       contenidoDiv.innerHTML = `
         <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -708,29 +773,174 @@ function loadHistorialSection() {
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
           </svg>
           <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
-          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial de ese año</p>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial.</p>
         </div>
       `;
 
     } catch (error) {
-      console.error("Error:", error);
-      btnContainer.innerHTML = '';
+      console.error("Error historial:", error);
+      btnContainer.innerHTML = '<p style="text-align:center; color:red;">Error cargando historial.</p>';
     }
   }
 
-function renderYearButtons(years) {
-    // NO limpiar innerHTML aquí porque borra los estilos del contenedor
-    // El innerHTML ya se limpió en initHistory()
+  // 2. Función para cargar datos de un año específico
+  async function loadYearData(year) {
+    const btnContainer = document.getElementById('historial-btn-container');
+    const contenidoDiv = document.getElementById('historial-contenido');
+
+    // --- LÓGICA DE DESELECCIÓN (CORREGIDA) ---
+    if (currentSelectedYear === year) {
+      currentSelectedYear = null;
+      
+      // 1. Resetear estilos de TODOS los botones (sin borrarlos ni recargar)
+      const allBtns = btnContainer.querySelectorAll('button');
+      allBtns.forEach(b => {
+        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
+        b.style.color = 'var(--nav-bg)';
+        b.style.transform = 'scale(1)';
+        b.style.boxShadow = 'none';
+      });
+
+      // 2. Mostrar el mensaje de "Selecciona un año" (Placeholder)
+      contenidoDiv.innerHTML = `
+        <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; opacity: 0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial.</p>
+        </div>
+      `;
+      return; // Salimos de la función aquí para no cargar nada más
+    }
     
-    // Ordenar años de menor a mayor (2024, 2025, 2026...)
-    const sortedYears = years.sort((a, b) => a - b);
+    // --- LÓGICA DE SELECCIÓN (NORMAL) ---
+    currentSelectedYear = year;
     
-    sortedYears.forEach(year => {
+    // Actualizar estilos de botones (Resaltar el activo)
+    const allBtns = btnContainer.querySelectorAll('button');
+    allBtns.forEach(b => {
+      if (b.textContent == year) {
+        b.style.background = 'var(--nav-bg)';
+        b.style.color = 'white';
+        b.style.transform = 'scale(1.05)';
+        b.style.boxShadow = '0 5px 15px rgba(45, 90, 61, 0.3)';
+      } else {
+        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
+        b.style.color = 'var(--nav-bg)';
+        b.style.transform = 'scale(1)';
+        b.style.boxShadow = 'none';
+      }
+    });
+
+    // Pantalla de carga (Solo del contenido de abajo)
+    contenidoDiv.style.display = 'block';
+    contenidoDiv.innerHTML = `
+      <div style="margin-bottom: 25px; text-align: center; padding: 2rem;">
+        <div style="display: inline-flex; align-items: center; gap: 12px; background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div style="width: 30px; height: 30px; border: 3px solid rgba(45, 90, 61, 0.1); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0;"></div>
+          <span style="color: var(--nav-bg); font-size: 0.95rem; font-weight: 600; white-space: nowrap;">⏳ Cargando Amigo Secreto ${year} ⏳</span>
+        </div>
+      </div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    `;
+
+    try {
+      let finalData = [];
+
+      // A. Intento Firebase
+      const fbSorteo = firebaseHistoryData.find(s => {
+         const date = s.createdAt ? s.createdAt.toDate() : new Date();
+         return date.getFullYear() == year;
+      });
+
+      if (fbSorteo) {
+        const assignmentsSnap = await db.collection('sorteos').doc(fbSorteo.id).collection('assignments').get();
+        if (!assignmentsSnap.empty) {
+          finalData = assignmentsSnap.docs.map(doc => {
+             const d = doc.data();
+             return {
+               Giver: d.giverName,
+               Receiver: d.receiverName,
+               ImageURL: 'https://cdn-icons-png.flaticon.com/512/6213/6213233.png', 
+               GiftURL: '#'
+             };
+          });
+        }
+      }
+
+      // B. Fallback API
+      if (finalData.length === 0) {
+        const response = await fetch(`${MY_API_URL}?year=${year}`);
+        const rawData = await response.json();
+        finalData = rawData.data || rawData;
+      }
+
+      if (!Array.isArray(finalData) || finalData.length === 0) {
+        contenidoDiv.innerHTML = `
+          <div style="padding: 2rem; text-align:center;">
+              <div style="font-size: 3rem; margin-bottom: 10px;">📭</div>
+              <h3>El álbum del ${year} está vacío</h3>
+              <p>No se encontraron registros.</p>
+          </div>`;
+        return;
+      }
+
+      // Renderizar Cartas
+      const cardsHtml = finalData.map(row => {
+        const giver = row.Giver || row.giver || "???";
+        const receiver = row.Receiver || row.receiver || "???";
+        const giftUrl = row.GiftURL || row.giftURL || "#";
+        const imgUrl = row.ImageURL || row.imageURL;
+        
+        const finalImg = (imgUrl && imgUrl.toString().startsWith('http')) 
+          ? imgUrl 
+          : 'https://cdn-icons-png.flaticon.com/512/6213/6213233.png';
+        
+        const imgStyle = finalImg.includes('flaticon') ? 'object-fit:contain; padding:20px; background:#f9fafb;' : 'object-fit:cover;';
+
+        const clickAction = (giftUrl && giftUrl.length > 5 && giftUrl !== '#') 
+          ? `<a href="${giftUrl}" target="_blank" class="card-link-overlay" title="Ver regalo"></a>` : '';
+
+        return `
+          <div class="history-card">
+            <div class="history-header">
+              <div class="name-badge">${giver}</div>
+              <div class="arrow-badge">➔</div>
+              <div class="name-badge">${receiver}</div>
+            </div>
+            <div class="history-image-wrapper">
+              <img src="${finalImg}" alt="Regalo" loading="lazy" style="${imgStyle}">
+              ${clickAction}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      contenidoDiv.innerHTML = `
+        <div class="history-section-container" style="animation: fadeInUp 0.5s ease;">
+          <div class="history-year-title">🎄 Amigo Secreto ${year} 🎄</div>
+          <div class="history-grid">
+            ${cardsHtml}
+          </div>
+        </div>
+      `;
+
+    } catch (error) {
+      console.error(`Error cargando ${year}:`, error);
+      contenidoDiv.innerHTML = `<p style="color:red; padding:2rem; text-align:center;">Ocurrió un error al cargar los datos.</p>`;
+    }
+  }
+
+  // 3. Renderizar botones
+  function renderYearButtons(years) {
+    const btnContainer = document.getElementById('historial-btn-container');
+    years.forEach(year => {
       const btn = document.createElement('button');
       btn.textContent = year;
       btn.className = 'btn-historial-year'; 
       
-      // Aplicar estilos críticos con !important
+      // Estilos forzados para asegurar horizontalidad
       btn.style.setProperty('width', 'auto', 'important');
       btn.style.setProperty('min-width', '140px', 'important');
       btn.style.setProperty('display', 'inline-flex', 'important');
@@ -743,147 +953,20 @@ function renderYearButtons(years) {
     });
   }
 
-  // Variable para rastrear el año actualmente seleccionado
-  let currentSelectedYear = null;
-
-  async function loadYearData(year) {
-    // Verificar si se hace clic en el mismo año que ya está seleccionado
-    if (currentSelectedYear === year) {
-      // Deseleccionar: volver al estado inicial
-      currentSelectedYear = null;
-      
-      // Restaurar todos los botones a su estado normal
-      const allBtns = btnContainer.querySelectorAll('button');
-      allBtns.forEach(b => {
-        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
-        b.style.color = 'var(--nav-bg)';
-        b.style.transform = 'scale(1)';
-        b.style.boxShadow = 'none';
-      });
-      
-      // Mostrar el mensaje inicial de nuevo
-      contenidoDiv.style.display = 'block';
-      contenidoDiv.innerHTML = `
-        <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; opacity: 0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">📅 Selecciona un año</h3>
-          <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Haz clic en uno de los botones de arriba para ver el historial de ese año</p>
-        </div>
-      `;
-      return; // Salir de la función
-    }
+  // 4. Función de Entrada del Menú
+  function loadHistorialSection() {
+    const btnContainer = document.getElementById('historial-btn-container');
+    const contenidoDiv = document.getElementById('historial-contenido');
     
-    // Si llegamos aquí, es un año diferente, así que lo seleccionamos
-    currentSelectedYear = year;
-    
-    // 3. AL HACER CLIC: Ahora sí mostramos el cuadro blanco
-    contenidoDiv.style.display = 'block'; 
-    
-    // Resaltar botón activo
-    const allBtns = btnContainer.querySelectorAll('button');
-    allBtns.forEach(b => {
-      if (b.textContent == year) {
-        b.style.background = 'var(--nav-bg)';
-        b.style.color = 'white';
-        b.style.transform = 'scale(1.05)';
-        b.style.boxShadow = '0 4px 12px rgba(45, 90, 61, 0.4)';
-      } else {
-        b.style.background = 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%)';
-        b.style.color = 'var(--nav-bg)';
-        b.style.transform = 'scale(1)';
-        b.style.boxShadow = 'none';
-      }
-    });
+    if (!btnContainer || !contenidoDiv) return;
 
-    // Loading con el mismo estilo que el placeholder
-    contenidoDiv.innerHTML = `
-      <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <div style="width: 50px; height: 50px; margin: 0 auto 1.5rem; border: 4px solid rgba(45, 90, 61, 0.1); border-top-color: var(--nav-bg); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-        <h3 style="color: var(--nav-bg); font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">⏳ Cargando Amigo Secreto ${year}</h3>
-        <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Obteniendo los datos del año seleccionado...</p>
-      </div>
-      <style>
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      </style>
-    `;
-
-    try {
-      const response = await fetch(`${MY_API_URL}?year=${year}`);
-      const rawData = await response.json();
-      let data = rawData.data || rawData; 
-      
-      if (!Array.isArray(data) || data.length === 0) {
-        contenidoDiv.innerHTML = `<p style="text-align:center; padding: 2rem;">El álbum del ${year} está vacío.</p>`;
-        return;
-      }
-
-      const cardsHtml = data.map(row => {
-        const giver = row.Giver || row.giver || "???";
-        const receiver = row.Receiver || row.receiver || "???";
-        const giftUrl = row.GiftURL || row.giftURL || "#";
-        const imgUrl = row.ImageURL || row.imageURL;
-
-        const finalImg = (imgUrl && imgUrl.toString().startsWith('http')) 
-          ? imgUrl 
-          : 'https://via.placeholder.com/400x250?text=Sin+Imagen';
-
-        const isSpoiler = giver === "???" || receiver === "???";
-        const clickAction = (isSpoiler || giftUrl === '#' || giftUrl.length < 5) 
-          ? '' 
-          : `<a href="${giftUrl}" target="_blank" class="card-link-overlay" title="Ver regalo original"></a>`;
-
-        return `
-          <div class="history-card" style="animation: fadeInUp 0.5s ease;">
-            <div class="history-header">
-              <div class="name-badge">${giver}</div>
-              <div class="arrow-badge">➔</div>
-              <div class="name-badge">${receiver}</div>
-            </div>
-            <div class="history-image-wrapper">
-              <img src="${finalImg}" alt="Regalo" loading="lazy">
-              ${clickAction}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // Renderizar grilla
-      contenidoDiv.innerHTML = `
-        <div class="history-section-container">
-          <div class="history-year-title">🎄 Amigo Secreto ${year} 🎄</div>
-          <div class="history-grid">
-            ${cardsHtml}
-          </div>
-        </div>
-      `;
-
-    } catch (error) {
-      console.error(`Error cargando ${year}:`, error);
-      contenidoDiv.innerHTML = `<p style="text-align:center; color:red; padding: 2rem;">Error al cargar datos.</p>`;
+    // Si está vacío, inicializamos. Si ya tiene botones, no hacemos nada (mantenemos estado).
+    if (btnContainer.innerHTML === '') {
+       contenidoDiv.style.display = 'none'; 
+       initHistory();
     }
   }
-}
 
-  const savePerfil = document.getElementById('save-profile-btn');
-  if (savePerfil) {
-    savePerfil.addEventListener('click', async () => {
-      const wishlistURL = document.getElementById('my-wishlist-url').value.trim();
-      const steamCode = document.getElementById('my-steam-friend-code').value.trim();
-      try {
-        await db.collection('users').doc(currentUser.uid).update({ 
-          wishlistURL,
-          steamFriendCode: steamCode
-        });
-        customAlert("Perfil actualizado", "Tu información se ha guardado correctamente.");
-      } catch (error) {
-        customAlert("Error", error.message);
-      }
-    });
-  }
 
   // ==========================================
   // 5. SORTEOS (Crear, Editar, Realizar, Ver)
@@ -928,20 +1011,90 @@ function renderYearButtons(years) {
   // Exponerla al HTML para que funcione el onclick
   window.handleEditParticipant = handleEditParticipant;
 
-  function loadSorteoSection() {
-    // --- GUARDIA: Si es invitado, salimos ---
-    if (isGuestMode) return;
-
+function loadSorteoSection() {
     const sorteoSec = document.getElementById('sorteo-section');
     if (!sorteoSec) return;
 
-    // Contenedor flex para los botones (Crear y Unirse)
+    // En modo invitado, mostrar interfaz similar pero sin botones de crear/unirse
+    if (isGuestMode) {
+      sorteoSec.innerHTML = `
+        <div class="section-header">
+          <h2>Sorteos</h2>
+          <div style="display:flex; flex-direction:column; gap:15px; align-items:center; width:100%;">
+            <div style="text-align: center; padding: 15px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; color: #92400e; width: 100%; max-width: 600px;">
+              <strong>👋 Modo Invitado:</strong> Puedes explorar los sorteos finalizados. Para participar, necesitas iniciar sesión.
+            </div>
+            <button id="btn-toggle-finalized" class="btn-secondary">Ver Finalizados</button>
+          </div>
+        </div>
+        <div id="sorteos-list"></div>
+      `;
+      
+      // Toggle Finalizados para invitados
+      const toggleBtn = document.getElementById('btn-toggle-finalized');
+      const listContainer = document.getElementById('sorteos-list');
+      toggleBtn.addEventListener('click', () => {
+        const isShowing = listContainer.classList.toggle('show-finalized');
+        if (isShowing) {
+          toggleBtn.textContent = "Ocultar Finalizados";
+          toggleBtn.style.borderColor = "var(--nav-bg)";
+          toggleBtn.style.color = "var(--nav-bg)";
+        } else {
+          toggleBtn.textContent = "Ver Finalizados";
+          toggleBtn.style.borderColor = "#d1d5db";
+          toggleBtn.style.color = "#6b7280";
+        }
+      });
+      
+      // DELEGACIÓN DE EVENTOS para invitados
+      sorteoSec.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-go-history');
+        if (!btn) return;
+
+        const year = parseInt(btn.dataset.year);
+        
+        // Cambiar a sección de historial
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[data-target="historial-section"]').forEach(b => b.classList.add('active'));
+        
+        document.getElementById('sorteo-section').classList.add('hidden');
+        const histSec = document.getElementById('historial-section');
+        histSec.classList.remove('hidden');
+        
+        const btnContainer = document.getElementById('historial-btn-container');
+        if (!btnContainer || btnContainer.innerHTML === '') {
+            await initHistory();
+        }
+        
+        setTimeout(() => {
+            const yearButtons = btnContainer.querySelectorAll('button');
+            const targetButton = Array.from(yearButtons).find(b => b.textContent == year);
+            
+            if (targetButton) {
+                targetButton.click();
+            } else {
+                console.warn('No se encontró el botón del año:', year);
+                currentSelectedYear = year;
+                loadYearData(year);
+            }
+        }, 100);
+      });
+      
+      // Cargar los sorteos inmediatamente (estarán ocultos hasta hacer clic en Ver Finalizados)
+      displayMySorteos();
+      
+      return;
+    }
+
     sorteoSec.innerHTML = `
       <div class="section-header">
         <h2>Sorteos</h2>
-        <div style="display:flex; flex-direction:column; gap:10px; align-items:center; width:100%;">
-          <button id="btn-new-sorteo" class="btn-primary">+ Nuevo Sorteo</button>
-          <button id="btn-join-sorteo" class="btn-secondary">🔗 Unirse con Código</button>
+        <div style="display:flex; flex-direction:column; gap:15px; align-items:center; width:100%;">
+          <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; width:100%;">
+             <button id="btn-new-sorteo" class="btn-primary" style="margin:0;">+ Nuevo Sorteo</button>
+             <button id="btn-join-sorteo" class="btn-secondary" style="margin:0;">🔗 Unirse con Código</button>
+          </div>
+          <button id="btn-toggle-finalized" class="btn-secondary">Ver Finalizados</button>
         </div>
       </div>
       <div id="sorteos-list"></div>
@@ -949,11 +1102,71 @@ function renderYearButtons(years) {
 
     document.getElementById('btn-new-sorteo').addEventListener('click', handleNewSorteo);
     document.getElementById('btn-join-sorteo').addEventListener('click', handleJoinSorteo);
+
+    // Toggle Finalizados
+    const toggleBtn = document.getElementById('btn-toggle-finalized');
+    const listContainer = document.getElementById('sorteos-list');
+    toggleBtn.addEventListener('click', () => {
+      const isShowing = listContainer.classList.toggle('show-finalized');
+      if (isShowing) {
+        toggleBtn.textContent = "Ocultar Finalizados";
+        toggleBtn.style.borderColor = "var(--nav-bg)";
+        toggleBtn.style.color = "var(--nav-bg)";
+      } else {
+        toggleBtn.textContent = "Ver Finalizados";
+        toggleBtn.style.borderColor = "#d1d5db";
+        toggleBtn.style.color = "#6b7280";
+      }
+    });
     
+    // DELEGACIÓN DE EVENTOS
     sorteoSec.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-id]');
+      // Aquí detectamos si hicieron clic en el botón de historial
+      const btn = e.target.closest('[data-id]') || e.target.closest('.btn-go-history');
       if (!btn) return;
+
+// Lógica del botón 📁: Detecta el año y simula clic en el botón del año correspondiente
+      if (btn.classList.contains('btn-go-history')) {
+          const year = parseInt(btn.dataset.year); // Lee el año guardado en el botón
+          
+          // 1. Cambiar visualmente la pestaña activa en el menú
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('[data-target="historial-section"]').forEach(b => b.classList.add('active'));
+          
+          // 2. Ocultar sorteos y mostrar sección de historial
+          document.getElementById('sorteo-section').classList.add('hidden');
+          const histSec = document.getElementById('historial-section');
+          histSec.classList.remove('hidden');
+          
+          // 3. Inicializar el historial si no está inicializado
+          const btnContainer = document.getElementById('historial-btn-container');
+          if (!btnContainer || btnContainer.innerHTML === '') {
+              await initHistory();
+          }
+          
+          // 4. SIMULAR CLIC EN EL BOTÓN DEL AÑO
+          // Esperamos un momento para que los botones se rendericen
+          setTimeout(() => {
+              const yearButtons = btnContainer.querySelectorAll('button');
+              const targetButton = Array.from(yearButtons).find(b => b.textContent == year);
+              
+              if (targetButton) {
+                  // Simular clic real en el botón del año
+                  targetButton.click();
+              } else {
+                  // Fallback si no se encuentra el botón (no debería pasar)
+                  console.warn('No se encontró el botón del año:', year);
+                  currentSelectedYear = year;
+                  loadYearData(year);
+              }
+          }, 100);
+          
+          return;
+      }
+
+      // Resto de botones
       const id = btn.dataset.id;
+      if (!id) return;
       
       if (btn.classList.contains('btn-edit-name')) await handleEditName(id, btn.dataset.name);
       else if (btn.classList.contains('btn-view-id')) await handleViewId(id);
@@ -962,10 +1175,11 @@ function renderYearButtons(years) {
       else if (btn.classList.contains('btn-reset-sorteo')) await handleResetSorteo(id);
       else if (btn.classList.contains('btn-delete-sorteo')) await handleDeleteSorteo(id, btn.dataset.name);
       else if (btn.classList.contains('btn-ver-resultado')) await handleVerResultado(id);
+      else if (btn.classList.contains('btn-finalizar-sorteo')) await handleFinalizarSorteo(btn.dataset.id, btn.dataset.name);
     });
 
     displayMySorteos();
-  }
+}
 
   async function handleJoinSorteo() {
     try {
@@ -1311,7 +1525,11 @@ function renderYearButtons(years) {
         });
       });
       
-      batch.update(db.collection('sorteos').doc(id), { status: "realizado" });
+      batch.update(db.collection('sorteos').doc(id), { 
+        status: "realizado",
+        realizedAt: firebase.firestore.FieldValue.serverTimestamp() // <--- Guardamos fecha exacta
+      });
+      
       await batch.commit();
 
       if (hasParticipantsWithoutAccount || sendEmails) {
@@ -1386,88 +1604,196 @@ function renderYearButtons(years) {
     if (res.exists) customAlert("Tu Amigo Secreto", `Regalas a: <strong>${res.data().receiverName}</strong>`);
   }
 
-  function displayMySorteos() {
-    const container = document.getElementById('sorteos-list');
-    if (!container) return;
-    if (unsubscribeSorteos) unsubscribeSorteos();
-    
+function displayMySorteos() {
+  const container = document.getElementById('sorteos-list');
+  if (!container) return;
+  
+  if (unsubscribeSorteos) unsubscribeSorteos();
+  
+  // Modo invitado: siempre cargar sorteos finalizados
+  if (isGuestMode) {
     unsubscribeSorteos = db.collection('sorteos')
-      .where('participantIds', 'array-contains', currentUser.uid)
+      .where('status', '==', 'finalizado')
       .orderBy('createdAt', 'desc')
+      .limit(20) // Limitar a 20 para no sobrecargar
       .onSnapshot(snap => {
-        if (snap.empty) return container.innerHTML = `
-          <div style="text-align:center; padding:3rem; color:#888;">
-            <div style="font-size:3rem; margin-bottom:1rem;">🎲</div>
-            <p>No tienes sorteos activos.</p>
-          </div>`;
+        if (snap.empty) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3rem; color:#888;">
+              <div style="font-size:3rem; margin-bottom:1rem;">📭</div>
+              <p>No hay sorteos finalizados disponibles aún.</p>
+            </div>`;
+          return;
+        }
         
         container.innerHTML = snap.docs.map(doc => {
           const d = doc.data();
-          const isAdmin = d.adminId === currentUser.uid;
+          const isFinalized = true; // Siempre finalizado en modo invitado
           
-          // Fichas de Participantes
-          const partsHtml = d.participants.map(p => {
-            const icon = p.hasAccount ? '👤' : '✉️';
-            const bgClass = p.hasAccount ? 'bg-user' : 'bg-manual';
-            
-            // LOGICA LÁPIZ: Solo si soy admin, es manual Y el sorteo está ABIERTO
-            let editBtn = '';
-            if (isAdmin && !p.hasAccount && d.status === 'abierto') {
-               editBtn = `<button class="btn-edit-part" onclick="handleEditParticipant('${doc.id}', '${p.userId}', '${p.email || ''}')" title="Corregir correo">✏️</button>`;
-            }
+          const styleGray = "font-size:0.8rem; background:#f3f4f6; padding:3px 10px; border-radius:12px; color:#4b5563; white-space:nowrap;";
+          const styleBlue = "font-size:0.8rem; background:#eff6ff; padding:3px 10px; border-radius:12px; color:#2563eb; border: 1px solid #bfdbfe; white-space:nowrap;";
+          
+          const createdStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : '---';
+          const finalStr = d.finalizedAt ? new Date(d.finalizedAt.seconds * 1000).toLocaleDateString() : '---';
 
-            return `
-              <div class="participant-chip ${bgClass}" title="${p.email || ''}">
-                <div class="p-icon">${icon}</div>
-                <div class="p-info"><span class="p-name">${p.name}</span></div>
-                ${editBtn}
-              </div>`;
+          const datesHtml = `
+            <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:nowrap;">
+                <span class="date-pill" style="${styleGray}">📅 ${createdStr}</span>
+                <span class="date-pill" style="${styleBlue}">🏁 ${finalStr}</span>
+            </div>`;
+
+          const partsHtml = d.participants.map(p => {
+              const icon = p.hasAccount ? '👤' : '✉️';
+              const bgClass = p.hasAccount ? 'bg-user' : 'bg-manual';
+              return `<div class="participant-chip ${bgClass}"><div class="p-icon">${icon}</div><div class="p-info"><span class="p-name">${p.name}</span></div></div>`;
           }).join('');
           
-          // Botones de Acción
-          let btns = '';
-          if (isAdmin) {
-            btns += `<button class="btn-icon btn-edit-name" data-id="${doc.id}" data-name="${d.sorteoName}" title="Editar nombre">${iconEdit}</button>`;
-            btns += `<button class="btn-icon btn-view-id" data-id="${doc.id}" title="Copiar ID">${iconLink}</button>`;
-            
-            if (d.status === 'abierto') {
-              // Si está ABIERTO: Botones de Agregar y Play Verde
-              btns += `<button class="btn-icon btn-add-participant-manual" data-id="${doc.id}" title="Agregar manual" style="color:#d4af37; border-color:#d4af37;">${iconUserPlus}</button>`;
-              btns += `<button class="btn-icon btn-realizar-sorteo" data-id="${doc.id}" style="color:white; background:#10b981; border:none;" title="REALIZAR">${iconPlay}</button>`;
-            } else {
-              // Si está REALIZADO: Botón de Reiniciar (Naranja)
-              btns += `<button class="btn-icon btn-reset-sorteo" data-id="${doc.id}" title="Rehacer Sorteo" style="color:#f59e0b; border-color:#f59e0b;">${iconReset}</button>`;
-            }
-            
-            btns += `<button class="btn-icon btn-delete-sorteo" data-id="${doc.id}" data-name="${d.sorteoName}" title="Eliminar" style="color:#ef4444;">${iconDelete}</button>`;
-          } else {
-            // Vista Usuario Normal
-            if (d.status === 'realizado') btns += `<button class="btn-icon btn-ver-resultado" data-id="${doc.id}" title="Ver mi resultado" style="width:auto; padding:0 15px; border-radius:20px;">👁️ Ver mi Amigo</button>`;
-            else btns += `<span class="waiting-badge">⏳ Esperando...</span>`;
-          }
-
-          const statusLabel = d.status === 'realizado' ? 'REALIZADO' : 'ABIERTO';
-          const statusClass = d.status === 'realizado' ? 'status-done' : 'status-open';
+          // Botón para ver el año
+          const year = d.createdAt ? new Date(d.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
+          const btns = `<button class="btn-icon btn-go-history" data-year="${year}" title="Ver Año" style="color:#d97706; border:2px solid #fffbeb !important;">📁</button>`;
 
           return `
-            <div class="sorteo-card modern-layout">
-              <div class="card-header-modern centered-header">
-                <h3 class="centered-title">${d.sorteoName}</h3>
-                <div class="actions-block centered-actions">${btns}</div>
-                <div class="header-meta-row centered-meta">
-                  <span class="status-pill ${statusClass}">${statusLabel}</span>
-                  <span class="budget-mini-pill">💰 $${d.budget}</span>
-                  <span class="date-pill">📅 ${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Reciente'}</span>
+            <div class="sorteo-card modern-layout is-finalized" style="opacity:0.9;">
+              <div class="card-header-horizontal">
+                <div class="header-info-col">
+                  <h3 class="horizontal-title">${d.sorteoName}</h3>
+                  <div class="header-meta-row horizontal-meta">
+                    <span class="status-pill status-archived">FINALIZADO</span>
+                    <span class="budget-mini-pill">💰 $${d.budget}</span>
+                    ${datesHtml}
+                  </div>
+                </div>
+                <div class="header-actions-col">
+                  <div class="actions-block centered-actions" style="margin:0 !important;">${btns}</div>
                 </div>
               </div>
+
               <div class="participants-section">
-                <p class="section-label">Participantes (${d.participants.length})</p>
-                <div class="participants-grid">${partsHtml}</div>
+                  <p class="section-label">Participantes (${d.participants.length})</p>
+                  <div class="participants-grid">${partsHtml}</div>
               </div>
             </div>`;
         }).join('');
       });
+    return;
   }
+  
+  // Admin Fix
+  const MY_ID = "I0mzYBfJiJXB4ptXxWuQsBykAGl1"; 
+  if (currentUser && currentUser.uid === MY_ID) {
+     db.collection('sorteos').where('participantIds', 'array-contains', MY_ID).get().then(snap => {
+        snap.forEach(doc => { if (doc.data().adminId !== MY_ID) doc.ref.update({ adminId: MY_ID }); });
+     });
+  }
+
+  unsubscribeSorteos = db.collection('sorteos')
+    .where('participantIds', 'array-contains', currentUser.uid)
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      if (snap.empty) return container.innerHTML = `
+        <div style="text-align:center; padding:3rem; color:#888;">
+          <div style="font-size:3rem; margin-bottom:1rem;">🎲</div>
+          <p>No tienes sorteos activos.</p>
+        </div>`;
+      
+      container.innerHTML = snap.docs.map(doc => {
+        const d = doc.data();
+        const isAdmin = d.adminId === currentUser.uid;
+        const isFinalized = d.status === 'finalizado';
+        
+        // --- FECHAS UNIDAS ---
+        const styleGray = "font-size:0.8rem; background:#f3f4f6; padding:3px 10px; border-radius:12px; color:#4b5563; white-space:nowrap;";
+        const styleBlue = "font-size:0.8rem; background:#eff6ff; padding:3px 10px; border-radius:12px; color:#2563eb; border: 1px solid #bfdbfe; white-space:nowrap;";
+        
+        const createdStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : '---';
+        const finalStr = d.finalizedAt ? new Date(d.finalizedAt.seconds * 1000).toLocaleDateString() : '---';
+
+        let datesHtml = '';
+        if (isFinalized) {
+            datesHtml = `
+            <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:nowrap;">
+                <span class="date-pill" style="${styleGray}">📅 ${createdStr}</span>
+                <span class="date-pill" style="${styleBlue}">🏁 ${finalStr}</span>
+            </div>`;
+        } else {
+            datesHtml = `<span class="date-pill" style="${styleGray}">📅 ${createdStr}</span>`;
+        }
+
+        const finalizedClass = isFinalized ? 'is-finalized' : '';
+        const statusLabel = d.status === 'realizado' ? 'REALIZADO' : (isFinalized ? 'FINALIZADO' : 'ABIERTO');
+        const statusClass = d.status === 'realizado' ? 'status-done' : (isFinalized ? 'status-archived' : 'status-open');
+        const opacityStyle = isFinalized ? 'opacity:0.9;' : '';
+
+        // --- PARTICIPANTES ---
+        const partsHtml = d.participants.map(p => {
+            const icon = p.hasAccount ? '👤' : '✉️';
+            const bgClass = p.hasAccount ? 'bg-user' : 'bg-manual';
+            const editBtn = (isAdmin && !p.hasAccount && d.status === 'abierto') 
+              ? `<button class="btn-edit-part" onclick="window.handleEditParticipant('${doc.id}', '${p.userId}', '${p.email || ''}')">✏️</button>` : '';
+            return `<div class="participant-chip ${bgClass}"><div class="p-icon">${icon}</div><div class="p-info"><span class="p-name">${p.name}</span></div>${editBtn}</div>`;
+        }).join('');
+        
+        // --- BOTONES DE ACCIÓN ---
+        let btns = '';
+        if (isAdmin) {
+          // 1. ETIQUETA ARCHIVADO (A la izquierda del lápiz)
+          if (isFinalized) {
+             btns += `<span style="font-size:0.75rem; color:#6b7280; font-weight:700; border:1px solid #ccc; padding:2px 8px; border-radius:10px; margin-right:10px;">ARCHIVADO</span>`;
+          }
+
+          // 2. BOTÓN EDITAR (Lápiz)
+          btns += `<button class="btn-icon btn-edit-name" data-id="${doc.id}" data-name="${d.sorteoName}" title="Editar Nombre">${iconEdit}</button>`;
+          
+          if (d.status === 'abierto') {
+            btns += `<button class="btn-icon btn-view-id" data-id="${doc.id}" title="Copiar ID">${iconLink}</button>`;
+            btns += `<button class="btn-icon btn-add-participant-manual" data-id="${doc.id}" title="Agregar Manual">${iconUserPlus}</button>`;
+            btns += `<button class="btn-icon btn-realizar-sorteo" data-id="${doc.id}" title="REALIZAR">${iconPlay}</button>`;
+          } 
+          else if (d.status === 'realizado') {
+            btns += `<button class="btn-icon btn-view-id" data-id="${doc.id}" title="Copiar ID">${iconLink}</button>`;
+            btns += `<button class="btn-icon btn-reset-sorteo" data-id="${doc.id}" title="Rehacer">${iconReset}</button>`;
+            btns += `<button class="btn-icon btn-finalizar-sorteo" data-id="${doc.id}" data-name="${d.sorteoName}" title="Finalizar Sorteo">🏁</button>`;
+          }
+          else if (isFinalized) {
+             // 3. BOTÓN CARPETA (Ver Año)
+             const year = d.createdAt ? new Date(d.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
+             btns += `<button class="btn-icon btn-go-history" data-year="${year}" title="Ver Año" style="color:#d97706; border:2px solid #fffbeb !important;">📁</button>`;
+          }
+          
+          // 4. BOTÓN ELIMINAR
+          btns += `<button class="btn-icon btn-delete-sorteo" data-id="${doc.id}" data-name="${d.sorteoName}" title="Eliminar">${iconDelete}</button>`;
+        } else {
+          // Vista Usuario normal
+          if (d.status === 'realizado') btns += `<button class="btn-icon btn-ver-resultado" data-id="${doc.id}" style="width:auto; padding:0 15px; border-radius:20px;">👁️ Ver mi Amigo</button>`;
+          else if (isFinalized) btns += `<span style="font-size:0.8rem; color:#6b7280; font-weight:700;">FINALIZADO</span>`;
+          else btns += `<span class="waiting-badge">⏳ Esperando...</span>`;
+        }
+
+        return `
+          <div class="sorteo-card modern-layout ${finalizedClass}" style="${opacityStyle}">
+            
+            <div class="card-header-horizontal">
+              <div class="header-info-col">
+                <h3 class="horizontal-title">${d.sorteoName}</h3>
+                <div class="header-meta-row horizontal-meta">
+                  <span class="status-pill ${statusClass}">${statusLabel}</span>
+                  <span class="budget-mini-pill">💰 $${d.budget}</span>
+                  ${datesHtml}
+                </div>
+              </div>
+              <div class="header-actions-col">
+                <div class="actions-block centered-actions" style="margin:0 !important;">${btns}</div>
+              </div>
+            </div>
+
+            <div class="participants-section">
+                <p class="section-label">Participantes (${d.participants.length})</p>
+                <div class="participants-grid">${partsHtml}</div>
+            </div>
+          </div>`;
+      }).join('');
+    });
+}
 
   // ==========================================
   // 6. EFECTOS (Música y Nieve)
@@ -1537,19 +1863,186 @@ function renderYearButtons(years) {
     resize(); create(); img.onload = draw;
   }
 
-  // Revelar Amigo Secreto (Click Global)
+  /* ==========================================
+   EVENTO: CLICK EN EL OJO (REVELAR/OCULTAR)
+   ========================================== */
   const contentContainer = document.getElementById('content-container');
-  if (contentContainer) {
+    if (contentContainer) {
     contentContainer.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btn-reveal-secret');
-      if (!btn) return;
-      const card = btn.closest('.secret-friend-card');
-      const isRev = card.classList.toggle('is-revealed');
-      const nameSpan = card.querySelector('.secret-name');
-      nameSpan.textContent = isRev ? btn.dataset.name : '............';
-      btn.innerHTML = isRev ? iconViewOff : iconView;
+    // Detectar click en el botón del ojo
+    const btn = e.target.closest('.btn-reveal-secret');
+    if (!btn) return;
+    
+    // Buscar la tarjeta padre y el span del nombre
+    const card = btn.closest('.secret-friend-card');
+    const nameSpan = card.querySelector('.secret-name');
+    
+    // Alternar la clase 'is-revealed'
+    const isRev = card.classList.toggle('is-revealed');
+    
+    // LÓGICA DE CAMBIO DE TEXTO:
+    if (isRev) {
+      // Si está revelado -> Mostrar nombre real
+      nameSpan.textContent = btn.dataset.name;
+      btn.innerHTML = iconViewOff; // Icono de ojo tachado
+    } else {
+      // Si está oculto -> Mostrar asteriscos
+      nameSpan.textContent = '******';
+      btn.innerHTML = iconView;    // Icono de ojo normal
+    }
     });
   }
+
+  /* Función para archivar (Finalizar Sorteo) - DISEÑO ACTUALIZADO CON FECHA */
+async function handleFinalizarSorteo(id, name) {
+  try {
+    // Creamos el mensaje con el diseño visual
+    const confirmMessage = `
+      <div style="text-align:left; color: var(--text-primary); padding-top: 10px;">
+        
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.4;">
+            Estás a punto de finalizar el evento <strong>"${name}"</strong>
+        </p>
+        
+        <p style="font-weight: 800; margin-bottom: 1rem; color: var(--nav-bg); font-size: 1rem;">
+            Ten en cuenta:
+        </p>
+        
+        <ul style="list-style:none; padding-left:5px; margin:0; color: var(--text-secondary); font-size:0.95rem;">
+          
+          <li style="display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;">
+            <span style="font-size:1.4rem; line-height: 1;">🔒</span>
+            <span>El sorteo se cerrará y pasará al <strong>Ver Finalizados</strong>.</span>
+          </li>
+          
+          <li style="display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;">
+            <span style="font-size:1.4rem; line-height: 1;">📜</span>
+            <span>Quedará guardado para el recuerdo.</span>
+          </li>
+          
+          <li style="display:flex; align-items:flex-start; gap:12px; margin-bottom:0;">
+            <span style="font-size:1.4rem; line-height: 1;">🎁</span>
+            <span>Se asume que los regalos ya fueron entregados.</span>
+          </li>
+          
+        </ul>
+      </div>
+    `;
+
+    // Lanzamos el modal de confirmación
+    await customConfirm("Finalizar Evento", confirmMessage, "Dar por finalizado");
+    
+    // Si confirma, actualizamos estado Y guardamos la fecha de finalización
+    await db.collection('sorteos').doc(id).update({ 
+      status: 'finalizado',
+      finalizedAt: firebase.firestore.FieldValue.serverTimestamp() // <--- CRÍTICO para calcular la duración
+    });
+    
+    // Alerta de éxito
+    customAlert("¡Evento Finalizado!", "El sorteo ha sido archivado exitosamente en el Historial.");
+    
+  } catch (e) {
+    // Si cancela, no hacemos nada (e === 'cancelled')
+    if (e !== 'cancelled') customAlert("Error", e.message);
+  }
+}
+
+/* ===========================================================
+     🛠️ HERRAMIENTA SIMPLIFICADA: HISTORIAL 2024 (SOLO FICHA)
+     Solo registra participantes, fechas y dinero. Sin parejas.
+     =========================================================== */
+  async function importarSorteo2024() {
+    
+    // 1. CONFIGURACIÓN: EDITA ESTO
+    const nombreSorteo = "Amigo Secreto 2024";
+    const presupuesto = 1500; // El valor que quieras
+    
+    // SOLO PON LOS NOMBRES AQUÍ (Sin parejas, solo la lista de gente)
+    const nombresParticipantes = [
+      "Ariel",
+      "Cata",
+      "Chico",
+      "Dann",
+      "Felipe",
+      "Jaime",
+      "Lukas",
+      "Pinilla"
+    ];
+
+    try {
+      if (!currentUser) return customAlert("Error", "Debes iniciar sesión primero.");
+
+      const confirm = await customConfirm(
+        "Crear Ficha 2024", 
+        `Se creará el registro de "<strong>${nombreSorteo}</strong>".<br>
+         Participantes: <strong>${nombresParticipantes.length}</strong><br>
+         Presupuesto: <strong>$${presupuesto}</strong><br><br>
+         <em>Nota: Al no definir parejas, este sorteo aparecerá en la lista de finalizados, pero el álbum de 'Amigos Secretos' de 2024 estará vacío.</em>`,
+        "Crear Registro"
+      ).catch(()=>false);
+
+      if (!confirm) return;
+
+      showLoadingModal("Guardando...", "Generando registro histórico...");
+
+      const batch = db.batch();
+      const sorteoRef = db.collection('sorteos').doc(); // ID nuevo
+      
+      // Creamos la estructura de participantes para la tarjeta
+      const participants = nombresParticipantes.map((nombre, index) => ({
+        userId: `legacy_24_${index}_${Math.random().toString(36).substr(2,5)}`,
+        name: nombre,
+        email: "sin_email@historial.com", 
+        hasAccount: false 
+      }));
+
+      // Agregamos TU USUARIO real a la lista para que puedas ver el sorteo
+      // (Si tu nombre ya está en la lista de arriba, esto solo asegura que el sistema sepa que es tuyo)
+      const myId = currentUser.uid;
+      
+      // Generamos el array de IDs
+      const participantIds = participants.map(p => p.userId);
+      
+      // ¡IMPORTANTE! Agregamos tu ID real al array de IDs para que el filtro de Firebase lo encuentre
+      if (!participantIds.includes(myId)) {
+          participantIds.push(myId);
+      }
+
+      // FECHAS DEL 2024
+      const fechaInicio = new Date("2024-12-24T12:00:00");
+      const fechaFin    = new Date("2024-12-26T10:00:00"); // Fecha en que "terminó"
+
+      // CREAMOS EL DOCUMENTO
+      batch.set(sorteoRef, {
+        sorteoName: nombreSorteo,
+        budget: presupuesto,
+        adminId: currentUser.uid, 
+        status: 'finalizado',     // Aparece directamente como finalizado
+        
+        participants: participants,
+        participantIds: participantIds, 
+
+        // Timestamps antiguos
+        createdAt: firebase.firestore.Timestamp.fromDate(fechaInicio),
+        realizedAt: firebase.firestore.Timestamp.fromDate(fechaInicio), // Se realizó el mismo día de inicio
+        finalizedAt: firebase.firestore.Timestamp.fromDate(fechaFin)
+      });
+
+      // No creamos la colección 'assignments' porque no quieres parejas.
+      
+      await batch.commit();
+
+      customAlert("¡Registro Creado!", "El sorteo 2024 ya aparece en tu lista de Finalizados.");
+
+    } catch (e) {
+      console.error(e);
+      customAlert("Error", e.message);
+    }
+  }
+  
+  // Exponer a consola
+  window.importarSorteo2024 = importarSorteo2024;
+
 });
 
 // ==========================================
