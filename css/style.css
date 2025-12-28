@@ -221,7 +221,7 @@ body {
   border-radius: 0;
   box-shadow: none;
   margin-bottom: 2rem;
-  max-width: 1200px;
+  max-width: 1750px; /* Aumentado más para que quepa completo */
   width: 95%;
   margin-left: auto;
   margin-right: auto;
@@ -706,26 +706,7 @@ button.btn-secondary:hover {
   width: 95%;
 }
 
-/* --- Tarjeta del Amigo Secreto (Estilo Horizontal / Ticket) --- */
-.secret-friend-card {
-  background: #ffffff;
-  border: 2px solid var(--accent-gold);
-  border-radius: 20px;
-  padding: 1.5rem 2.5rem;
-  
-  /* Esto activa el modo horizontal */
-  display: flex; 
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-  
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto 2rem auto;
-}
+
 
 /* Decoración de fondo */
 .secret-friend-card::after {
@@ -739,170 +720,10 @@ button.btn-secondary:hover {
   transform: rotate(-15deg);
 }
 
-/* --- SECCIONES INTERNAS --- */
-
-/* IZQUIERDA: Título */
-.section-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex: 0 0 auto;
-}
-
-.gift-icon {
-  font-size: 2.5rem;
-  animation: bounce 2s infinite;
-}
-
-.title-group h2 {
-  font-size: 1.6rem;
-  line-height: 1.1;
-  margin: 0;
-  color: var(--nav-bg);
-  text-align: left;
-  font-weight: 800;
-}
-
-/* CENTRO: Datos */
-.section-center {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  background: #f9fafb;
-  padding: 10px 25px;
-  border-radius: 50px;
-  border: 1px solid #e5e7eb;
-}
-
-.info-block {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-block .label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  color: #6b7280;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-  font-weight: 600;
-}
-
-.info-block .value {
-  font-weight: 700;
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.info-block .value.budget {
-  color: var(--btn-primary);
-}
-
-.vertical-divider {
-  width: 1px;
-  height: 30px;
-  background: #d1d5db;
-}
-
-/* DERECHA: Acción */
-.section-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 0 0 auto;
-}
-
-.reveal-text {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.reveal-text .label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #9ca3af;
-  margin-bottom: 5px;
-}
-
-.secret-name {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent-red);
-  line-height: 1;
-  min-width: 150px;
-  text-align: right;
-  transition: all 0.5s ease;
-}
-
-/* Borroso cuando no se ha revelado */
-.secret-friend-card:not(.is-revealed) .secret-name {
-  filter: blur(10px);
-  opacity: 0.5;
-  user-select: none;
-  letter-spacing: 2px;
-}
-
-/* Botón Ojo */
-.btn-reveal-secret {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: var(--accent-gold);
-  color: white;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-}
-
-.btn-reveal-secret:hover {
-  transform: scale(1.1);
-  background: #bf9b30;
-}
-
-.btn-reveal-secret svg {
-  width: 26px; height: 26px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
-}
-
 /* Animación saltito del regalo */
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
-}
-
-/* --- RESPONSIVE PARA MÓVIL (Importante) --- */
-@media (max-width: 900px) {
-  .secret-friend-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 1.5rem;
-    padding: 2rem 1.5rem;
-  }
-  
-  .section-left, .section-center, .section-right {
-    width: 100%;
-    justify-content: center;
-    flex-direction: column;
-  }
-  
-  .title-group h2 { text-align: center; }
-  
-  .section-center {
-    flex-direction: row; 
-    justify-content: space-around;
-  }
-  
-  .reveal-text { text-align: center; }
-  .secret-name { text-align: center; margin-bottom: 10px; }
 }
 
 .instructions-card {
@@ -1287,16 +1108,24 @@ button.btn-historial-year:hover {
 
 /* 3. Cuadro de Contenido (Oculto al inicio) */
 .historial-container {
-  display: none; /* Se mantiene oculto hasta que JS lo active */
+  display: none;            /* Oculto por defecto */
   background: white;
-  border-radius: var(--border-radius-xl);
-  padding: 2rem;
-  margin-top: 10px;
-  box-shadow: var(--card-shadow);
-  border: 2px solid rgba(0, 0, 0, 0.04);
-  position: relative;
-  z-index: 10;
-  animation: fadeInUp 0.5s ease;
+  border-radius: 20px;
+  
+  /* Centrado y Espaciado */
+  padding: 3rem 2rem;
+  text-align: center;       /* Centra texto e imagen */
+  margin: 20px auto;
+  
+  /* TAMAÑO ROBUSTO */
+  width: 100% !important;   /* Ocupa todo el ancho */
+  max-width: 1200px;        /* Pero no infinito */
+  box-sizing: border-box;
+  
+  /* Sombra suave */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.4s ease;
 }
 
 /* Título rojo del año dentro del álbum */
@@ -1374,23 +1203,25 @@ button.btn-historial-year:hover {
 }
 
 /* =========================================
-   DISEÑO ÁLBUM HISTORIAL 2024
+   DISEÑO ÁLBUM HISTORIAL (DEFINITIVO)
    ========================================= */
 
-/* 1. El Contenedor Principal Rojo */
+/* 1. Contenedor Rojo del Fondo */
 .history-section-container {
-  background-color: #8b3a3a; /* Rojo oscuro de la imagen */
+  background-color: #8b3a3a;
   border-radius: 20px;
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 2.5rem;          /* AUMENTADO: Más espacio interno para que no se vea apretado */
+  max-width: 100%;          /* CAMBIO: Que ocupe todo el ancho disponible */
+  width: 100%;              
   margin: 0 auto 2rem auto;
   box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
   border: 3px solid rgba(0,0,0,0.1);
+  box-sizing: border-box;   /* IMPORTANTE: Para que el padding no rompa el ancho */
 }
 
-/* La barra de título "2024" */
+/* La barra de título con el año */
 .history-year-title {
-  background-color: #7a1e1e; /* Un rojo un poco más intenso */
+  background-color: #7a1e1e;
   color: white;
   text-align: center;
   font-size: 1.8rem;
@@ -1402,21 +1233,34 @@ button.btn-historial-year:hover {
   letter-spacing: 1px;
 }
 
-/* 2. La Grilla de Cartas (Centrada) */
+/* 2. La Grilla de Cartas (3 columnas FIJAS) */
 .history-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center; /* Centrado horizontal perfecto */
-  gap: 25px;
+  display: flex;            
+  flex-wrap: wrap;          /* Permite saltar de línea */
+  justify-content: center;  /* ESTO ES CLAVE: Centra las cartas si sobran espacios */
+  gap: 20px;                /* Espacio entre cartas */
   padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* 3. La Carta Individual */
+/* Reemplaza en style.css */
 .history-card {
-  width: 300px; /* Ancho fijo para uniformidad */
+  /* FÓRMULA MÁGICA: 
+     100% / 3 columnas = 33.333%
+     Restamos 20px (el gap) para que quepan exactas.
+  */
+  flex: 0 0 calc(33.333% - 20px); 
+  
+  /* Límite máximo para que no se vean gigantes en pantallas ultra-anchas */
+  max-width: 484px;
+  /* Límite mínimo para que no se aplasten */
+  min-width: 300px; 
+  
+  /* Tus estilos visuales originales... */
   background: white;
   border-radius: 16px;
-  padding: 12px; /* Marco blanco alrededor */
+  padding: 12px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.2);
   transition: all 0.3s ease;
   display: flex;
@@ -1425,6 +1269,7 @@ button.btn-historial-year:hover {
   position: relative;
 }
 
+/* 3. Efectos hover de la carta */
 .history-card:hover {
   transform: translateY(-7px);
   box-shadow: 0 15px 30px rgba(0,0,0,0.3);
@@ -1438,25 +1283,23 @@ button.btn-historial-year:hover {
   gap: 10px;
 }
 
-/* Etiquetas de los Nombres (Verde) */
 .name-badge {
-  background-color: var(--nav-bg); /* Usa tu verde corporativo */
+  background-color: var(--nav-bg);
   color: white;
   font-weight: 700;
   font-size: 0.95rem;
   padding: 8px 12px;
   border-radius: 8px;
   text-align: center;
-  flex: 1; /* Ocupan el mismo espacio */
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Etiqueta de la Flecha (Azul) */
 .arrow-badge {
-  background-color: #007bff; /* Azul brillante de la imagen */
+  background-color: #007bff; /* Azul brillante */
   color: white;
   width: 32px;
   height: 32px;
@@ -1469,28 +1312,29 @@ button.btn-historial-year:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* 5. Contenedor de la Imagen */
+/* 5. Contenedor de la Imagen (Steam Header 460x215) */
 .history-image-wrapper {
   width: 100%;
-  height: 180px; /* Altura fija para que todas se vean iguales */
+  aspect-ratio: 460 / 215; /* Proporción exacta de Steam */
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  background: #f0f0f0;
+  background: #1b2838; /* Fondo Steam por si la imagen no carga */
 }
 
 .history-image-wrapper img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* La imagen llena el espacio sin deformarse */
+  object-fit: cover; /* Cubre todo el espacio */
+  object-position: center;
+  display: block; /* Elimina espacios debajo de la imagen */
   transition: transform 0.5s ease;
 }
 
 .history-card:hover .history-image-wrapper img {
-  transform: scale(1.05); /* Pequeño zoom al pasar el mouse */
+  transform: scale(1.05);
 }
 
-/* Enlace invisible para hacer clic en toda la imagen */
 .card-link-overlay {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -1498,10 +1342,69 @@ button.btn-historial-year:hover {
   cursor: pointer;
 }
 
-/* Ajuste para móviles */
+/* 6. Ajuste Responsivo del Historial */
+
+@media (max-width: 1600px) {
+  .history-card {
+    /* 100% / 2 = 50% menos el gap */
+    flex: 0 0 calc(50% - 20px); 
+  }
+  
+  .history-section-container {
+    padding: 2rem;
+  }
+}
+
+/* Móviles (bajar a 1 columna) */
+@media (max-width: 900px) {
+  .history-card {
+    /* Ocupar todo el ancho */
+    flex: 0 0 100%;
+    max-width: 450px; /* Un tope razonable para celular */
+  }
+
+  .history-section-container { 
+    padding: 1rem; 
+  }
+}
+
+/* Móviles (1 columna) */
+@media (max-width: 1000px) {
+  .history-grid {
+    grid-template-columns: 1fr; /* 1 columna que ocupa todo */
+    gap: 15px;
+  }
+  
+  .history-section-container { 
+    padding: 1rem; 
+  }
+  
+  .history-card {
+    max-width: 484px; /* Límite máximo */
+  }
+  
+  /* Reducir tamaño del título en móviles */
+  #historial-section h2,
+  .history-year-title {
+    font-size: 1.3rem;
+    padding: 0.6rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* Móviles pequeños */
 @media (max-width: 600px) {
-  .history-section-container { padding: 1rem; }
-  .history-card { width: 100%; max-width: 350px; }
+  .history-section-container { 
+    padding: 1rem; 
+  }
+  
+  #historial-section h2,
+  .history-year-title {
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+  }
 }
 
 /* =========================================
@@ -1600,6 +1503,190 @@ button.btn-historial-year:hover {
   }
   .participants-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =========================================
+   NUEVA TARJETA VERTICAL (CLEAN LOOK)
+   ========================================= */
+
+.secret-friend-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  border: 2px solid var(--accent-gold);
+  
+  display: flex;
+  flex-direction: column; 
+  
+  width: 100%;
+  max-width: 850px; /* Un poco más ancho para que quepa el nombre */
+  margin: 0 auto 2rem auto;
+  position: relative;
+  overflow: hidden;
+  padding: 0; 
+  transition: transform 0.3s ease;
+}
+
+.secret-friend-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+}
+
+/* --- CABECERA (Gris suave arriba) --- */
+.card-header-top {
+  background: #f9fafb;
+  padding: 1rem 2rem !important;
+  border-bottom: 1px solid #e5e7eb;
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-title-group h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--nav-bg);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.header-budget {
+  background: white;
+  border: 2px solid var(--accent-gold);
+  color: #92400e;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  white-space: nowrap;
+}
+
+/* --- CUERPO (Blanco abajo) --- */
+.card-body-reveal {
+  padding: 2rem 1.5rem; /* Menos altura arriba/abajo */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: white;
+  min-height: 180px; /* Altura mínima controlada */
+}
+
+.reveal-label {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 1.5rem;
+}
+
+/* Contenedor del Nombre y Botón */
+.reveal-content-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap; /* Importante para móviles */
+}
+
+/* EL NOMBRE GIGANTE */
+.secret-name {
+  color: var(--accent-red) !important;
+  font-weight: 800 !important;
+  
+  /* CAMBIO CLAVE: Tamaño más pequeño y dinámico */
+  /* Se adapta: mínimo 14px, preferido 4% del ancho, máximo 28px */
+  font-size: clamp(0.9rem, 4vw, 1.8rem) !important; 
+  
+  line-height: 1.2;
+  text-align: center;
+  
+  /* Forzar una línea pero SIN puntos suspensivos */
+  white-space: nowrap !important; 
+  overflow: visible !important;    /* Deja que se vea todo */
+  text-overflow: clip !important;  /* No poner puntos (...) */
+  
+  display: block;
+  width: 100%;
+  padding: 0 5px;
+  
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+/* ESTADO OCULTO (Blur + Transparencia) */
+.secret-friend-card:not(.is-revealed) .secret-name {
+  filter: blur(8px);
+  opacity: 0.5;
+  letter-spacing: 5px;
+  cursor: default;
+  user-select: none;
+}
+
+/* EL BOTÓN REDONDO */
+.btn-reveal-secret {
+  width: 55px !important;
+  height: 55px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0; /* No se aplasta */
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  
+  background: var(--nav-bg) !important; /* Verde corporativo */
+  color: white !important;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(45, 90, 61, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.btn-reveal-secret:hover {
+  transform: scale(1.1);
+  background-color: #bfa030 !important; /* Un dorado un poco más oscuro */
+}
+
+.btn-reveal-secret svg {
+  width: 26px !important;
+  height: 26px !important;
+  stroke: white !important; /* Fuerza que las líneas sean blancas siempre */
+  fill: none !important;
+  transition: transform 0.2s ease;
+}
+
+/* AJUSTE PARA MÓVILES */
+@media (max-width: 600px) {
+  .card-header-top {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .header-title-group {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .reveal-content-row {
+    flex-direction: column; /* Nombre arriba, botón abajo */
+    gap: 20px;
+  }
+  
+  .secret-name {
+    font-size: 1.8rem !important;
   }
 }
 
@@ -1788,7 +1875,6 @@ button.btn-historial-year:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 /* 4. El Botón de Editar (Pegado a la derecha) */
 .btn-edit-part {
@@ -2094,142 +2180,6 @@ button.btn-historial-year:hover {
 }
 
 /* =========================================
-   DISEÑO HISTORIAL "ESTILO ÁLBUM 2024"
-   ========================================= */
-
-/* 1. Contenedor Rojo del Fondo */
-.history-section-container {
-  background-color: #8b3a3a; /* El rojo oscuro de tu imagen */
-  border-radius: 20px;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-  border: 4px solid rgba(0,0,0,0.1);
-}
-
-/* Título de la sección (La barra roja superior) */
-.history-year-title {
-  background-color: #7a1e1e; /* Rojo más oscuro para el título */
-  color: white;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 800;
-  padding: 0.8rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* 2. Grid de Cartas (Modo Flex para centrado perfecto) */
-.history-grid {
-  display: flex;           /* Usamos Flexbox */
-  flex-wrap: wrap;         /* Permite que las cartas bajen de fila */
-  justify-content: center; /* CENTRA todas las cartas horizontalmente */
-  gap: 25px;               /* Espacio entre ellas */
-  padding: 20px 10px;      /* Un poco de aire arriba y abajo */
-}
-
-/* 3. La Carta Individual */
-.history-card {
-  width: 300px;            /* Ancho fijo para uniformidad */
-  background: white;
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  /* Asegura que no se encojan */
-  flex-shrink: 0; 
-}
-
-.history-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.3);
-}
-
-/* 4. Encabezado de la Carta (Nombres y Flecha) */
-.history-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.name-badge {
-  background-color: #1e3a29; /* Verde oscuro (como tu nav) */
-  color: white;
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-align: center;
-  flex: 1; /* Para que ocupen el mismo ancho */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.arrow-badge {
-  background-color: #007bff; /* Azul brillante */
-  color: white;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 1rem;
-  flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* 5. Imagen del Regalo */
-.history-image-wrapper {
-  width: 100%;
-  height: 160px; /* Altura fija para uniformidad */
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: #000;
-  position: relative;
-}
-
-.history-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Recorta la imagen para llenar el cuadro */
-  transition: transform 0.5s ease;
-}
-
-/* Efecto Zoom al pasar el mouse */
-.history-card:hover .history-image-wrapper img {
-  transform: scale(1.1);
-}
-
-/* Enlace invisible que cubre la imagen */
-.card-link-overlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 2;
-  cursor: pointer;
-}
-
-/* Responsive Móvil */
-@media (max-width: 600px) {
-  .history-section-container {
-    padding: 1rem;
-  }
-  .history-grid {
-    grid-template-columns: 1fr; /* Una columna en celular */
-  }
-}
-
-/* =========================================
    7. RESPONSIVE (Mejorado)
    ========================================= */
 
@@ -2379,13 +2329,6 @@ button.btn-historial-year:hover {
     width: 100%;
     padding: 0 15px;
     margin-bottom: 25px;
-  }
-
-  .secret-friend-card {
-    flex-direction: column;
-    padding: 1.5rem;
-    gap: 1.5rem;
-    text-align: center;
   }
 
   .secret-friend-card h2 {
@@ -2624,10 +2567,9 @@ button.btn-historial-year:hover {
 }
 
 /* Cuando el body tiene la clase .guest-mode */
-body.guest-mode .nav-btn[data-target="sorteo-section"],
 body.guest-mode .nav-btn[data-target="deseos-section"],
 body.guest-mode .nav-btn[data-target="perfil-section"] {
-  display: none !important; /* Oculta Sorteo, Listas y Perfil */
+  display: none !important; /* Oculta solo Listas y Perfil */
 }
 
 /* Ocultar sección de la tarjeta de regalo en Inicio para invitados */
@@ -2677,4 +2619,306 @@ body.guest-mode .guest-welcome-msg {
   .nav-bottom-list li:nth-child(4) a.nav-btn .nav-icon {
     margin-bottom: 2px;
   }
+}
+
+.status-archived {
+  background: #4b5563; /* Gris oscuro */
+  color: white;
+  border: 1px solid #374151;
+}
+
+/* =========================================
+   DISEÑO HORIZONTAL "PANEL DE CONTROL"
+   ========================================= */
+
+/* 1. Contenedor Flexible Horizontal */
+.card-header-horizontal {
+  display: flex;
+  justify-content: space-between; /* Extremos opuestos */
+  align-items: center;            /* Centrado vertical */
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 20px;
+  background: #fdfdfd;
+}
+
+/* 2. Columna Izquierda (Info) */
+.header-info-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alineado a la izquierda */
+  gap: 8px;
+  flex: 1; /* Toma el espacio disponible */
+}
+
+/* Título alineado a la izquierda */
+.horizontal-title {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--nav-bg);
+  font-weight: 800;
+  text-align: left;
+  line-height: 1.2;
+}
+
+/* Meta datos en fila (izquierda) */
+.horizontal-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 3. Columna Derecha (Botones) */
+.header-actions-col {
+  flex-shrink: 0; /* No se encoge */
+}
+
+/* =========================================
+   RESPONSIVE (MÓVIL)
+   En pantallas chicas, volvemos a apilar (vertical)
+   ========================================= */
+@media (max-width: 768px) {
+  .card-header-horizontal {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .header-info-col {
+    align-items: center; /* Centrar info */
+    width: 100%;
+  }
+  
+  .horizontal-title {
+    text-align: center;
+  }
+  
+  .horizontal-meta {
+    justify-content: center;
+  }
+  
+  .header-actions-col {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* =========================================
+   TOGGLE SORTEOS FINALIZADOS
+   ========================================= */
+/* Por defecto, la tarjeta finalizada está oculta */
+.sorteo-card.is-finalized {
+  display: none;
+}
+
+/* Cuando el contenedor tiene la clase 'show-all', se muestran */
+#sorteos-list.show-finalized .sorteo-card.is-finalized {
+  display: block;
+  animation: fadeInUp 0.5s ease;
+}
+
+/* Estilo para el botón de toggle (Gris suave) */
+#btn-toggle-finalized {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  width: auto;
+  min-width: 200px;
+}
+
+#btn-toggle-finalized:hover {
+  background: #f3f4f6;
+  color: var(--nav-bg);
+  border-color: var(--nav-bg);
+}
+
+/* =========================================
+   MEJORA VISUAL: BOTONES DE ADMIN (FILA DE ICONOS)
+   ========================================= */
+
+/* 1. Forzamos que los botones de icono sean REDONDOS y PEQUEÑOS */
+/* Usamos !important para anular la regla global de width: 100% */
+button.btn-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  
+  padding: 0 !important;
+  margin: 5px !important; /* Espacio entre bolitas */
+  flex: 0 0 auto !important; /* Evita que se estiren */
+  
+  background: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 2. Efecto Hover (Levantar y brillar) */
+button.btn-icon:hover {
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  background: white;
+}
+
+/* 3. COLORES ESPECÍFICOS PARA CADA ACCIÓN (Para identificar rápido) */
+
+/* ✏️ Editar Nombre (Azul) */
+button.btn-edit-name { 
+  color: #3b82f6; 
+  border: 2px solid #eff6ff !important; 
+}
+button.btn-edit-name:hover { border-color: #3b82f6 !important; background: #eff6ff; }
+
+/* 🔗 Copiar ID (Violeta) */
+button.btn-view-id { 
+  color: #8b5cf6; 
+  border: 2px solid #f5f3ff !important; 
+}
+button.btn-view-id:hover { border-color: #8b5cf6 !important; background: #f5f3ff; }
+
+/* 👤 Agregar Manual (Dorado) */
+button.btn-add-participant-manual { 
+  color: #d97706; 
+  border: 2px solid #fffbeb !important; 
+}
+button.btn-add-participant-manual:hover { border-color: #d97706 !important; background: #fffbeb; }
+
+/* ▶️ Realizar Sorteo (Verde Sólido - Destacado) */
+button.btn-realizar-sorteo { 
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; 
+  color: white !important; 
+  border: none !important;
+}
+button.btn-realizar-sorteo:hover { 
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4) !important; 
+}
+
+/* 🔄 Rehacer / Reset (Naranja) */
+button.btn-reset-sorteo { 
+  color: #f97316; 
+  border: 2px solid #fff7ed !important; 
+}
+button.btn-reset-sorteo:hover { border-color: #f97316 !important; background: #fff7ed; }
+
+/* 🏁 Finalizar (Botón Blanco con Hover de Borde) */
+button.btn-finalizar-sorteo { 
+  background: white !important; 
+  color: #374151 !important;       /* Gris oscuro para que se vea el icono */
+  border: 2px solid #e5e7eb !important; /* Borde suave inicial */
+}
+
+button.btn-finalizar-sorteo:hover { 
+  background: white !important;    /* Mantiene fondo blanco */
+  color: #111827 !important;       /* Icono casi negro */
+  border-color: #1f2937 !important; /* Borde oscuro al pasar el mouse */
+  transform: translateY(-4px) scale(1.1); /* Efecto de levitación */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* 🗑️ Borrar (Rojo) */
+button.btn-delete-sorteo { 
+  color: #ef4444; 
+  border: 2px solid #fef2f2 !important; 
+}
+button.btn-delete-sorteo:hover { border-color: #ef4444 !important; background: #fef2f2; }
+
+
+/* 4. Arreglo del Contenedor para que queden centrados */
+.actions-block.centered-actions {
+  display: flex;
+  flex-direction: row; /* Asegura que vayan en fila */
+  flex-wrap: wrap;     /* Si son muchos, que bajen de línea ordenadamente */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 10px 0;
+  gap: 8px;
+}
+
+/* --- FORZAR FILA DE BOTONES DE ADMIN --- */
+.actions-block.centered-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important; /* <--- ESTO PROHIBE BAJAR DE LÍNEA */
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 10px 0 !important;
+  overflow-x: visible !important; /* Asegura que se vean */
+}
+
+/* Ajuste de seguridad para móviles: si son muchos, reducimos un pelín el margen */
+@media (max-width: 400px) {
+  button.btn-icon {
+    margin: 2px !important; /* Menos espacio entre bolitas en pantallas muy chicas */
+    width: 42px !important; /* Un poquito más chicos si es necesario */
+    height: 42px !important;
+  }
+}
+
+/* =========================================
+   OJO VER CONTRASEÑA (CORREGIDO)
+   ========================================= */
+
+/* Contenedor relativo */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 12px;
+  display: flex;       /* Asegura que los hijos se comporten bien */
+  align-items: center; /* Centra verticalmente */
+}
+
+/* Input con espacio a la derecha */
+.password-wrapper input {
+  width: 100%;
+  margin-bottom: 0 !important;
+  padding-right: 45px !important; /* Espacio para que el texto no toque el ojo */
+}
+
+/* El botón del ojo - REFORZADO CON !IMPORTANT */
+.btn-eye {
+  position: absolute !important; /* Forzamos que flote */
+  right: 10px !important;        /* Pegado a la derecha */
+  top: 50% !important;           /* Centrado vertical */
+  transform: translateY(-50%) !important;
+  
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 0 !important;       /* Anula el min-width de los botones grandes */
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  
+  z-index: 20 !important;        /* Asegura que esté encima del input */
+  cursor: pointer;
+  color: #6b7280 !important;     /* Color gris visible */
+}
+
+.btn-eye:hover {
+  background: transparent !important; /* Que no se ponga verde el fondo */
+  color: var(--nav-bg) !important;    /* Que se ponga verde el icono */
+  transform: translateY(-50%) scale(1.1) !important;
+  box-shadow: none !important;
+}
+
+.btn-eye svg {
+  width: 20px !important;
+  height: 20px !important;
+  pointer-events: none;
 }
