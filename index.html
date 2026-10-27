@@ -104,11 +104,12 @@
             <li><strong>Sorteo:</strong> La página asigna a cada persona un "Amigo Secreto" de forma aleatoria y secreta.</li>
             <li><strong>Agregarse en Steam:</strong> Agregarse en steam antes del día de la entrega es lo ideal para evitar la espera de 3 días que tiene steam para regalarse algo. (Pueden dejar su código en <a href="#" class="nav-btn-inline" data-target="perfil-section">Mi Perfil</a> o se las arreglan como quieran).</li>
             <li><strong>Lista de Deseos:</strong> Revisa la <a href="#" class="nav-btn-inline" data-target="deseos-section">Lista de deseados</a> para darte una idea que darle a tu amigo.</li>
-            <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo; No hace falta regirse por la lista de deseados, puede ser lo que sea a tu cariño y sepas que le va a gustar a tu amigo secreto.</li>
+            <li><strong>Regalo:</strong> Compra el regalo cumpliendo el presupuesto mínimo<span id="inicio-budget-inline"></span>; No hace falta regirse por la lista de deseados, puede ser lo que sea a tu cariño y sepas que le va a gustar a tu amigo secreto.</li>
             <li><strong>Entrega:</strong> El día acordado para entregarse los regalos, ojalá estar todos en discord (no pasará).</li>
           </ul>
           <p class="event-date">
-            La entrega de regalos será el: <strong>Ya fue</strong>
+            La entrega de regalos será el: <strong id="event-date-text">por definir</strong>
+            <span id="event-countdown" class="event-countdown"></span>
           </p>
         </div>
 
@@ -205,9 +206,23 @@
 
   <div class="snow"><canvas id="snowfall"></canvas></div>
   
-  <div id="audio-controls" aria-label="Controles de audio">
-    <button id="play-pause-btn" aria-label="Reproducir música"><svg viewBox="0 0 24 24"><path d="M6 4 L20 12 L6 20 Z" /></svg></button>
-    <div id="volume-container"><input type="range" id="volume-slider" min="0" max="100" value="2" aria-label="Control de volumen" style="writing-mode: vertical-lr; direction: rtl;" /></div>
+  <div id="audio-controls" aria-label="Reproductor de música">
+    <div class="audio-panel">
+      <div class="audio-panel-inner">
+        <button id="play-pause-btn" type="button" aria-label="Reproducir música"></button>
+        <div class="audio-main">
+          <!-- Cambia aquí el nombre de la canción -->
+          <div class="audio-title-wrap"><span id="audio-title" class="audio-title">Música de fondo</span></div>
+          <div class="audio-volume-row">
+            <button id="mute-btn" type="button" aria-label="Silenciar"></button>
+            <input type="range" id="volume-slider" min="0" max="100" value="5" aria-label="Control de volumen" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="audio-cover-btn" type="button" aria-label="Reproducir o pausar música">
+      <img class="audio-cover" src="https://res.cloudinary.com/djhgmmdjx/image/upload/v1762920149/cornenavidad_lxtqh3.webp" alt="" />
+    </button>
   </div>
   <audio id="audio-player" src="https://fortnite.gg/img/items/3340/audio.mp3?1" loop></audio>
   
