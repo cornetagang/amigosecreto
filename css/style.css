@@ -1947,6 +1947,19 @@ button.btn-historial-year:hover {
   margin-left: 0; /* Ya no es necesario 'auto' porque p-info empuja */
 }
 
+/* FIX: la regla global button:not(.btn-historial-year) le daba width:100% y
+   padding grande al lápiz, aplastando el nombre. Mayor especificidad aquí. */
+.participant-chip .btn-edit-part {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: 0 0 28px;
+  margin-left: 0;
+}
+.participant-chip .btn-edit-part::before { display: none; } /* sin efecto ripple */
+.participant-chip .p-info { min-width: 0; }
+
 /* =========================================
    6. EFECTOS (Nieve y Audio)
    ========================================= */
@@ -1965,83 +1978,201 @@ button.btn-historial-year:hover {
   height: 100%;
 }
 
-/* Audio Controls Mejorados */
+/* =========================================
+   REPRODUCTOR DE MÚSICA (solo carátula → se expande al pasar el mouse)
+   ========================================= */
 #audio-controls {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 24px;
+  right: 24px;
   z-index: 9998;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  padding: 8px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(61, 122, 81, 0.62) 0%, rgba(30, 67, 49, 0.62) 100%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 0 3px rgba(230, 197, 87, 0.25),
+    0 0 16px rgba(230, 197, 87, 0.45),
+    0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 0.4s ease;
+}
+
+#audio-controls.is-playing {
+  box-shadow:
+    0 0 0 3px rgba(230, 197, 87, 0.4),
+    0 0 26px rgba(230, 197, 87, 0.8),
+    0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Panel que se despliega hacia la izquierda de la carátula */
+.audio-panel {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+#audio-controls:hover .audio-panel,
+#audio-controls:focus-within .audio-panel {
+  max-width: 260px;
+  opacity: 1;
+}
+
+.audio-panel-inner {
+  box-sizing: border-box;
+  width: 260px;               /* ancho fijo: el contenido no se reacomoda mientras se abre */
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 #play-pause-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
-  border: 3px solid white;
-  cursor: pointer;
-  
-  /* Centrado geométrico base */
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0; /* Importante: reseteamos el relleno */
-  
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
-  transition: all var(--transition-smooth);
-  position: relative;
-  z-index: 9999;
-}
-
-#play-pause-btn:hover {
-  transform: scale(1.1); /* Quitamos la rotación que mareaba un poco */
-  box-shadow: 0 12px 32px rgba(212, 175, 55, 0.6);
-}
-
-#play-pause-btn svg {
-  width: 30px; /* Tamaño ajustado */
-  height: 30px;
-  fill: white;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
-  display: block;
-  /* Quitamos el transform fijo que tenías aquí */
-}
-
-#volume-container {
-  position: absolute;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 20px 15px;
-  border-radius: var(--border-radius-xl);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  pointer-events: none;
-  transition: all var(--transition-smooth);
-  z-index: 9998;
-  border: 2px solid var(--accent-gold);
-}
-
-#audio-controls:hover #volume-container {
-  opacity: 1;
-  pointer-events: auto;
-  bottom: 75px;
-}
-
-#volume-slider {
-  /* Removido -webkit-appearance: slider-vertical (deprecado) */
-  /* El estilo vertical ahora se maneja en el HTML con writing-mode y direction */
-  height: 120px;
-  width: 8px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
   cursor: pointer;
-  accent-color: var(--accent-gold);
-  background: transparent;
-  margin: 0 auto;
+  transition: background var(--transition-smooth), transform var(--transition-smooth);
+}
+#play-pause-btn:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.06); }
+#play-pause-btn:active { transform: scale(0.96); }
+#play-pause-btn svg { width: 20px; height: 20px; fill: currentColor; display: block; }
+
+.audio-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Título con marquesina (solo se mueve si no cabe, y solo con el panel abierto) */
+.audio-title-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+  mask-image: linear-gradient(90deg, #000 85%, transparent);
+}
+.audio-title {
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.audio-title.is-scrolling {
+  animation: audio-marquee var(--marquee-time, 8s) ease-in-out infinite alternate;
+}
+#audio-controls:not(:hover):not(:focus-within) .audio-title.is-scrolling {
+  animation-play-state: paused;
+}
+@keyframes audio-marquee {
+  0%, 15%   { transform: translateX(0); }
+  85%, 100% { transform: translateX(calc(-1 * var(--marquee-shift, 0px))); }
+}
+
+.audio-volume-row { display: flex; align-items: center; gap: 8px; }
+
+#mute-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+}
+#mute-btn:hover { opacity: 1; transform: scale(1.12); }
+#mute-btn svg { width: 18px; height: 18px; display: block; }
+
+/* Slider horizontal con relleno */
+#volume-slider {
+  --vol: 5%;
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 6px;
+  margin: 0;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #fff 0%, #fff var(--vol), rgba(255, 255, 255, 0.35) var(--vol), rgba(255, 255, 255, 0.35) 100%);
+}
+#volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform var(--transition-smooth);
+}
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+#volume-slider::-moz-range-track { background: transparent; }
+#volume-slider:hover::-webkit-slider-thumb,
+#volume-slider:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+/* Carátula (siempre visible; al hacer clic reproduce/pausa) */
+#audio-cover-btn {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.audio-cover {
+  width: 100%;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+#audio-controls.is-playing .audio-cover { animation: audio-cover-pulse 2.4s ease-in-out infinite; }
+@keyframes audio-cover-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-title.is-scrolling, #audio-controls.is-playing .audio-cover { animation: none; }
+  .audio-panel { transition: none; }
 }
 
 /* =========================================
@@ -2049,6 +2180,7 @@ button.btn-historial-year:hover {
    ========================================= */
 .steam-promo-container {
   margin-top: 2.5rem;
+  margin-bottom: 4rem; /* espacio bajo el botón para que no quede pegado al borde */
   text-align: center;
   display: flex;
   justify-content: center;
@@ -2922,3 +3054,477 @@ button.btn-delete-sorteo:hover { border-color: #ef4444 !important; background: #
   height: 20px !important;
   pointer-events: none;
 }
+
+/* =========================================
+   SORTEOS: fila de botones estable
+   (no cambia entre lista cerrada y abierta)
+   ========================================= */
+.sorteo-top-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;      /* siempre en fila en escritorio */
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.sorteo-top-actions #btn-new-sorteo,
+.sorteo-top-actions #btn-join-sorteo {
+  margin: 0;
+  flex: 0 0 auto;
+  min-width: 240px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .sorteo-top-actions {
+    flex-direction: column; /* siempre apilados en celular */
+    align-items: stretch;
+  }
+
+  .sorteo-top-actions #btn-new-sorteo,
+  .sorteo-top-actions #btn-join-sorteo {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+/* =========================================
+   SORTEOS FINALIZADOS EN CUADRÍCULA (máx. 2 por fila)
+   ========================================= */
+#sorteos-list {
+  display: grid;
+  grid-template-columns: 1fr;          /* pantallas chicas: 1 por fila */
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Tarjetas finalizadas: llenan su celda */
+#sorteos-list .sorteo-card.modern-layout.is-finalized {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  min-width: 0;                        /* evita que el contenido desborde la celda */
+}
+
+/* Sorteos activos y mensajes: ocupan toda la fila, centrados */
+#sorteos-list > :not(.is-finalized) {
+  grid-column: 1 / -1;
+}
+
+#sorteos-list > .sorteo-card.modern-layout:not(.is-finalized) {
+  width: 100%;
+  max-width: 950px;
+  justify-self: center;
+  margin: 0;
+}
+
+/* Pantallas grandes: 2 columnas como máximo */
+@media (min-width: 1300px) {
+  #sorteos-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================
+   TÍTULO DE SORTEO EN UNA SOLA LÍNEA
+   ========================================= */
+@media (min-width: 769px) {
+  .card-header-horizontal {
+    padding: 1.5rem 1.5rem;
+    gap: 12px;
+  }
+
+  .header-info-col {
+    min-width: 0;                 /* permite que el título se recorte en vez de partirse */
+  }
+
+  .horizontal-title {
+    max-width: 100%;
+    font-size: 1.5rem;
+    white-space: nowrap;          /* una sola línea */
+    overflow: hidden;
+    text-overflow: ellipsis;      /* si es larguísimo, termina en "…" */
+  }
+
+  /* Botones de icono un poco más compactos dentro del encabezado */
+  .card-header-horizontal button.btn-icon {
+    width: 44px !important;
+    height: 44px !important;
+    margin: 2px !important;
+  }
+
+  .card-header-horizontal .actions-block.centered-actions {
+    gap: 4px !important;
+    width: auto !important;
+  }
+}
+
+/* =========================================
+   CONFIGURACIÓN DE SORTEO (modal) + CUENTA REGRESIVA
+   ========================================= */
+.event-countdown {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--nav-bg);
+}
+.event-date strong { text-transform: capitalize; }
+
+.cfg-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
+.cfg-hint { margin: 6px 0 0; font-size: 0.8rem; color: #6b7280; }
+.cfg-sep { margin: 16px 0; border: 0; border-top: 1px solid #e5e7eb; }
+.cfg-check { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; cursor: pointer; }
+.cfg-check input { width: auto; margin: 0; }
+
+.cfg-groups { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.cfg-group {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: 8px; font-size: 0.88rem; font-weight: 600; color: #991b1b;
+}
+.cfg-group button {
+  width: auto !important; padding: 0 6px !important; margin: 0 !important;
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  color: #991b1b !important; cursor: pointer; font-size: 0.95rem;
+}
+
+.cfg-picker {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px;
+  max-height: 220px; overflow-y: auto; padding: 8px;
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;
+  scrollbar-width: thin; scrollbar-color: #b7c8bd transparent;
+}
+.cfg-picker::-webkit-scrollbar { width: 8px; }
+.cfg-picker::-webkit-scrollbar-thumb { background: #b7c8bd; border-radius: 999px; }
+.cfg-pick { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; }
+.cfg-pick input { width: auto; margin: 0; }
+
+button.cfg-add {
+  width: 100% !important; margin-top: 8px !important; padding: 0.55rem !important;
+  background: white !important; color: var(--nav-bg) !important;
+  border: 2px dashed var(--nav-bg) !important; box-shadow: none !important;
+  border-radius: 8px; font-weight: 700; cursor: pointer;
+}
+button.cfg-add:hover { background: rgba(45, 90, 61, 0.08) !important; }
+
+/* =========================================
+   MODAL DE CONFIGURACIÓN DEL SORTEO (más ancho en PC)
+   ========================================= */
+.app-modal-content:has(.cfg-layout) {
+  max-width: 1040px;
+  max-height: 92vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;              /* el scroll vive en el cuerpo, no en toda la tarjeta */
+}
+.app-modal-content:has(.cfg-layout) h3 {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 1.5rem 2.2rem 0.9rem;
+}
+.app-modal-content:has(.cfg-layout) #app-modal-message {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.4rem 2.2rem 1.4rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b7c8bd transparent;
+}
+.app-modal-content:has(.cfg-layout) #app-modal-message::-webkit-scrollbar { width: 8px; }
+.app-modal-content:has(.cfg-layout) #app-modal-message::-webkit-scrollbar-track { background: transparent; }
+.app-modal-content:has(.cfg-layout) #app-modal-message::-webkit-scrollbar-thumb {
+  background: #b7c8bd;
+  border-radius: 999px;
+}
+.app-modal-content:has(.cfg-layout) #app-modal-message::-webkit-scrollbar-thumb:hover { background: var(--nav-bg); }
+.cfg-layout { text-align: left; margin: 0.25rem 0; }
+
+/* Los <p> del modal heredan margen grande; lo anulamos para los hints */
+.app-modal-content .cfg-hint { margin: 6px 0 0; line-height: 1.4; font-size: 0.8rem; }
+#cfg-rule-msg:empty { display: none; }
+
+/* Fila superior: nombre | presupuesto | fecha */
+.cfg-general {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.3fr;
+  gap: 16px;
+  align-items: start;
+}
+.cfg-general-hint { grid-column: 1 / -1; margin-top: 0 !important; }
+
+/* Reglas y grupos, lado a lado */
+.cfg-cols {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 14px;
+}
+.cfg-card {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+.cfg-card .cfg-groups:empty { display: none; }
+
+/* Regla: [quién regala] no puede regalarle a [quién recibe] */
+.cfg-rule-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.cfg-rule-between { font-size: 0.8rem; color: #6b7280; text-align: center; }
+.cfg-rule-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+.cfg-rule-actions button.cfg-add {
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 0.5rem 1rem !important;
+  white-space: nowrap;
+}
+
+/* Pantallas medianas: reglas y grupos uno bajo otro (la regla sigue horizontal) */
+@media (max-width: 980px) {
+  .cfg-cols { grid-template-columns: 1fr; }
+}
+
+/* Móvil: todo en una columna */
+@media (max-width: 640px) {
+  .cfg-general { grid-template-columns: 1fr; gap: 10px; }
+  .cfg-rule-row { grid-template-columns: 1fr; gap: 6px; }
+  .cfg-rule-actions { flex-direction: column; align-items: stretch; }
+  .cfg-rule-actions button.cfg-add { width: 100% !important; }
+}
+
+
+/* Cruces bloqueados este año (resumen de solo lectura) */
+.cfg-blocked { margin-top: 14px; }
+.cfg-blocked .cfg-hint { margin: 2px 0 8px; }
+.cfg-status-ok { color: #166534; }
+.cfg-status-bad { color: #b91c1c; font-weight: 600; }
+.cfg-blocked-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+.cfg-blocked-grid:empty { display: none; }
+.cfg-blk { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; }
+.cfg-blk-giver { font-weight: 700; font-size: 0.88rem; color: var(--text-primary); }
+.cfg-blk-giver span { font-weight: 400; font-size: 0.78rem; color: #6b7280; }
+.cfg-blk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cfg-blk-chip {
+  background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+  border-radius: 999px; padding: 2px 10px; font-size: 0.8rem; font-weight: 600;
+}
+.cfg-blk-chip small { font-weight: 500; opacity: 0.7; margin-left: 4px; }
+
+/* Botones Guardar/Cancelar: pie fijo, de ancho completo y con fondo sólido */
+.app-modal-content:has(.cfg-layout) .modal-actions {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.9rem 2.2rem 1.2rem;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -8px 16px -12px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 640px) {
+  .app-modal-content:has(.cfg-layout) h3 { padding: 1.2rem 1.1rem 0.7rem; font-size: 1.3rem; }
+  .app-modal-content:has(.cfg-layout) #app-modal-message { padding: 0.3rem 1.1rem 1.1rem; }
+  .app-modal-content:has(.cfg-layout) .modal-actions {
+    flex-direction: row;          /* Cancelar y Guardar lado a lado también en móvil */
+    padding: 0.8rem 1.1rem 1rem;
+    gap: 0.6rem;
+  }
+  .app-modal-content:has(.cfg-layout) .modal-actions button { flex: 1; min-width: 0; width: auto; padding: 0.8rem 0.5rem; }
+}
+
+/* =========================================
+   SORTEO: ¿QUIÉN EMPIEZA LAS PISTAS?
+   ========================================= */
+#clue-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;               /* bajo los modales de la app (20000) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 35, 25, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  animation: clue-fade 0.25s ease;
+}
+@keyframes clue-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.clue-card {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: 95vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 2.2rem 1.8rem 1.8rem;
+  text-align: center;
+  background: var(--bg-primary);
+  border: 3px solid var(--accent-gold);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 0 40px rgba(230, 197, 87, 0.45), 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.clue-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.clue-close:hover { background: rgba(0, 0, 0, 0.14); }
+
+.clue-kicker {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+.clue-title { margin: 0 0 1.2rem; font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--nav-bg); }
+
+.clue-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  padding: 1rem;
+  border-radius: var(--border-radius-lg);
+  background: linear-gradient(135deg, var(--nav-bg) 0%, #1e4331 100%);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.clue-name {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(2rem, 9vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+  word-break: break-word;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+.clue-stage.is-spinning .clue-name { filter: blur(0.6px); opacity: 0.92; }
+.clue-stage.is-winner .clue-name {
+  color: var(--accent-gold-light);
+  animation: clue-pop 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.clue-stage.is-winner { box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.35), 0 0 30px rgba(230, 197, 87, 0.6); }
+@keyframes clue-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.clue-sub { min-height: 1.5em; margin: 1rem 0; font-size: 1.05rem; color: var(--text-secondary); }
+.clue-sub strong { color: var(--nav-bg); }
+
+.clue-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.clue-actions .clue-spin { margin: 0; font-size: 1.1rem; padding: 0.9rem 2rem; }
+.clue-actions .clue-reset { margin: 0; }
+.clue-actions .hidden, .clue-order.hidden { display: none; }
+.clue-spin:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.clue-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: center;
+  margin-top: 1.2rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.clue-order strong { width: 100%; color: var(--nav-bg); }
+.clue-order b { color: var(--accent-gold); }
+
+.clue-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 1.4rem; }
+.clue-chip {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  color: var(--text-primary);
+  transition: all 0.12s ease;
+}
+.clue-chip.is-now { border-color: var(--accent-gold); background: #fffbeb; transform: scale(1.08); }
+.clue-chip.is-done { opacity: 0.45; text-decoration: line-through; }
+
+.clue-confetti {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: clue-fall linear forwards;
+}
+@keyframes clue-fall {
+  to { transform: translate(var(--drift, 0), 110vh) rotate(720deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #clue-overlay, .clue-stage.is-winner .clue-name { animation: none; }
+}
+
+/* Ajustes: neutraliza los estilos globales de <button> dentro de la ruleta */
+#clue-overlay .clue-close {
+  position: absolute !important;
+  top: 12px !important;
+  right: 14px !important;
+  left: auto !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+#clue-overlay .clue-close:hover { background: rgba(0, 0, 0, 0.14) !important; }
+#clue-overlay .clue-actions button {
+  width: auto !important;
+  min-width: 190px;
+  margin: 0 !important;
+}
+#clue-overlay .clue-actions .clue-reset {
+  background: transparent !important;
+  border: 2px solid var(--nav-bg) !important;
+  color: var(--nav-bg) !important;
+  box-shadow: none !important;
+}
+#clue-overlay .clue-actions .clue-reset:hover { background: rgba(45, 90, 61, 0.08) !important; }
